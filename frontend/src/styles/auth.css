@@ -1,0 +1,162 @@
+.auth-swap-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  padding: 2rem;
+}
+
+.auth-swap-card {
+  position: relative;
+  width: 900px;
+  max-width: 100%;
+  height: 520px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 24px 68px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+}
+
+/* LADOS COM OS FORMULÁRIOS */
+
+.auth-swap-side {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  padding: 3rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform 0.6s ease, opacity 0.6s ease, z-index 0.6s ease;
+}
+
+.auth-swap-side--left {
+  left: 0;
+  z-index: 2;
+}
+
+.auth-swap-side--right {
+  left: 50%;
+  z-index: 1;
+  opacity: 0;
+}
+
+/* Quando está em modo register, o formulário de registo passa para a esquerda */
+.register-mode .auth-swap-side--left {
+  transform: translateX(-100%);
+  opacity: 0;
+  z-index: 1;
+}
+
+.register-mode .auth-swap-side--right {
+  transform: translateX(-100%);
+  opacity: 1;
+  z-index: 2;
+}
+
+.auth-swap-title {
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+  color: #111827;
+}
+
+.auth-swap-subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin-bottom: 1.8rem;
+}
+
+/* OVERLAY DESLIZANTE */
+
+.auth-swap-overlay-wrapper {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.6s ease, left 0.6s ease;
+  z-index: 3;
+}
+
+.auth-swap-overlay {
+  background: radial-gradient(circle at 0% 0%, #60a5fa, #2563eb 40%, #1e3a8a 80%);
+  background-size: 200% 200%;
+  animation: overlayGradient 16s ease-in-out infinite alternate;
+  position: relative;
+  width: 200%;
+  height: 100%;
+  display: flex;
+  transform: translateX(0);
+  transition: transform 0.6s ease;
+}
+
+.auth-overlay-panel {
+  width: 50%;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #f9fafb;
+}
+
+.auth-overlay-panel h1 {
+  font-size: 2rem;
+  margin-bottom: 0.6rem;
+}
+
+.auth-overlay-panel p {
+  font-size: 0.95rem;
+  margin-bottom: 1.4rem;
+  color: #e5e7eb;
+}
+
+.auth-overlay-panel--left {
+  /* texto mostrado quando estás na parte de registo */
+  align-items: flex-start;
+}
+
+.auth-overlay-panel--right {
+  /* texto mostrado quando estás na parte de login */
+  align-items: flex-start;
+}
+
+/* Quando muda para register-mode o overlay desliza para o outro lado */
+.register-mode .auth-swap-overlay-wrapper {
+  left: 0;
+}
+
+.register-mode .auth-swap-overlay {
+  transform: translateX(50%);
+}
+
+/* Botão secundário no overlay */
+.btn-secondary-outline {
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: transparent;
+  color: #f9fafb;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-secondary-outline:hover {
+  background: #f9fafb;
+  color: #1e3a8a;
+  transform: translateY(-1px);
+}
+
+/* Animação suave do gradiente */
+@keyframes overlayGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
