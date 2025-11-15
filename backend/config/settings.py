@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # tuas apps
-    'api',
+    'api'
 ]
 
 
@@ -84,8 +84,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ai4jurisdb',
+        'USER': 'admin',
+        'PASSWORD': 'admin123',
+        'HOST': 'db',
+        'PORT': '5432',
     }
 }
 
@@ -120,6 +124,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+AUTH_USER_MODEL = "api.User"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
