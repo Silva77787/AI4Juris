@@ -1,38 +1,48 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-function LoginPage({ onLogin }) {
+function LoginPage({ showToast }) {
   const navigate = useNavigate();
-  const [state, setState] = React.useState({
-    email: "",
-    password: ""
-  });
+  const [state, setState] = React.useState({ email: "", password: "" });
 
   const handleChange = (evt) => {
-    const value = evt.target.value;
-    setState({
-      ...state,
-      [evt.target.name]: value
-    });
+    setState({ ...state, [evt.target.name]: evt.target.value });
   };
 
-  const handleOnSubmit = (evt) => {
+  const handleOnSubmit = async (evt) => {
     evt.preventDefault();
 
-    // FRONTEND ONLY: login “fake”, sem chamar API
-    console.log("Login submit (frontend only):", state);
-
-    if (onLogin) {
-      onLogin("fake-token");
+    if (!state.email || !state.password) {
+      showToast("Email e password são obrigatórios", "error");
+      return;
     }
 
-    // se quiseres só o ecrã, podes remover esta linha
-    navigate("/dashboard");
+    try {
+      const response = await fetch("http://localhost:8000/login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state),
+      });
 
-    setState({
-      email: "",
-      password: ""
-    });
+      const data = await response.json();
+
+      if (!response.ok) {
+        showToast(data.error || "Credenciais inválidas", "error");
+        return;
+      }
+
+      // Guardar tokens
+      localStorage.setItem("accessToken", data.tokens.access);
+      localStorage.setItem("refreshToken", data.tokens.refresh);
+
+      showToast("Login efetuado com sucesso!", "success");
+
+      setState({ email: "", password: "" });
+      navigate("/home");
+    } catch (err) {
+      console.error(err);
+      showToast("Erro ao fazer login", "error");
+    }
   };
 
   return (
@@ -40,25 +50,11 @@ function LoginPage({ onLogin }) {
       <form onSubmit={handleOnSubmit}>
         <h1>Entrar</h1>
         <p className="login-subtitle">Aceda à plataforma AI4Juris</p>
-        <input
-          type="email"
-          placeholder="Email"
-          name="email"
-          value={state.email}
-          onChange={handleChange}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Palavra-passe"
-          value={state.password}
-          onChange={handleChange}
-        />
-        <a href="#">Esqueceu-se da palavra-passe?</a>
+        <input type="email" name="email" value={state.email} onChange={handleChange} placeholder="Email" />
+        <input type="password" name="password" value={state.password} onChange={handleChange} placeholder="Palavra-passe" />
         <button type="submit">Entrar</button>
       </form>
     </div>
-    
   );
 }
 

@@ -1,14 +1,43 @@
 // src/pages/HomePage.jsx
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function HomePage() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(null); // null = ainda a verificar
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/documents/')
-      .then((res) => res.json())
+    const token = localStorage.getItem('accessToken');
+
+    if (!token) {
+      // Se não tiver token, redireciona para login
+      navigate('/');
+      return;
+    }
+
+    // Token existe, considera autenticado (até prova em contrário)
+    setAuthenticated(true);
+
+    fetch('http://localhost:8000/documents/', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // JWT header
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          if (res.status === 401) {
+            // Token expirado ou inválido
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            navigate('/');
+          }
+          throw new Error('Erro ao buscar documentos');
+        }
+        return res.json();
+      })
       .then((data) => {
         setDocuments(data);
         setLoading(false);
@@ -17,14 +46,24 @@ function HomePage() {
         console.error('Erro ao carregar documentos:', err);
         setLoading(false);
       });
-  }, []);
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    navigate('/');
+  };
+
+  // Enquanto não sabemos se o usuário está autenticado, não renderizamos nada
+  if (authenticated === null) return null;
 
   return (
     <section>
       <h2>Histórico de Documentos</h2>
 
-      {/* Pesquisa / Filtros (placeholder para futuro) */}
-      <p style={{ color: '#666' }}>Aqui vais listar os PDFs enviados, com pesquisa, filtros e paginação.</p>
+      <button onClick={handleLogout} style={{ marginBottom: '1rem' }}>
+        Logout
+      </button>
 
       {/* Botão de upload */}
       <div style={{ marginTop: '1.5rem' }}>
@@ -43,7 +82,7 @@ function HomePage() {
           <ul>
             {documents.map((doc) => (
               <li key={doc.id} style={{ marginBottom: '1rem' }}>
-                <strong>{doc.title}</strong>  
+                <strong>{doc.title}</strong>
                 <br />
                 <small>
                   Ficheiro: {doc.filename} <br />

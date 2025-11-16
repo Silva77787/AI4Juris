@@ -1,26 +1,55 @@
 import './styles/App.css';
 import './styles/auth.css';
 
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
-import HomePage from './pages/HomePage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
+import HomePage from './pages/HomePage.jsx';
 import UploadPage from './pages/UploadPage.jsx';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 import GroupsPage from './pages/GroupsPage.jsx';
 
-function App() {
-  
-  const handleLogin = (token) => {
-          localStorage.setItem("token", token);
-          setAuth(token);
-      };
+import PrivateRoute from './components/PrivateRoute.jsx'; // novo componente para proteção de rotas
 
+function App() {
   return (
     <Routes>
-      {/* LOGIN / REGISTER COM O MESMO COMPONENTE */}
-      <Route path="/" element={<AuthPage onLogin={handleLogin} />} />
+      {/* Página inicial: login/register */}
+      <Route path="/" element={<AuthPage />} />
 
+      {/* Páginas protegidas: só acessíveis com token */}
+      <Route 
+        path="/home" 
+        element={
+          <PrivateRoute>
+            <HomePage />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/upload" 
+        element={
+          <PrivateRoute>
+            <UploadPage />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/admin" 
+        element={
+          <PrivateRoute>
+            <AdminDashboardPage />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/groups" 
+        element={
+          <PrivateRoute>
+            <GroupsPage />
+          </PrivateRoute>
+        } 
+      />
     </Routes>
   );
 }
