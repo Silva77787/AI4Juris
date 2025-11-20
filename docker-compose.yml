@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16
+    container_name: ai4juris_db
+    restart: always
+    environment:
+      POSTGRES_DB: ai4jurisdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "11111:5432" # porta externa para o Postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: ./backend
+    container_name: ai4juris_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      DB_NAME: ai4jurisdb
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      DB_HOST: db
+      DB_PORT: 5432
+    ports:
+      - "7777:8000" # porta externa para o backend
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: ai4juris_frontend
+    depends_on:
+      - web
+    ports:
+      - "3333:4173" # porta externa para o frontend
+
+volumes:
+  pgdata:

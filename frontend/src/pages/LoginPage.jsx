@@ -18,7 +18,7 @@ function LoginPage({ showToast }) {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/login/", {
+      const response = await fetch("http://localhost:7777/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(state),

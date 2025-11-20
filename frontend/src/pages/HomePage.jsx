@@ -20,7 +20,7 @@ function HomePage() {
     // Token existe, considera autenticado (até prova em contrário)
     setAuthenticated(true);
 
-    fetch('http://localhost:8000/documents/', {
+    fetch('http://localhost:7777/documents/', {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`, // JWT header
