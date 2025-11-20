@@ -1,6 +1,7 @@
 // src/pages/HomePage.jsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import '../styles/HomePage.css';
 
 function HomePage() {
   const [documents, setDocuments] = useState([]);
@@ -12,24 +13,21 @@ function HomePage() {
     const token = localStorage.getItem('accessToken');
 
     if (!token) {
-      // Se não tiver token, redireciona para login
       navigate('/');
       return;
     }
 
-    // Token existe, considera autenticado (até prova em contrário)
     setAuthenticated(true);
 
     fetch('http://localhost:7777/documents/', {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, // JWT header
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => {
         if (!res.ok) {
           if (res.status === 401) {
-            // Token expirado ou inválido
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             navigate('/');
@@ -54,47 +52,98 @@ function HomePage() {
     navigate('/');
   };
 
-  // Enquanto não sabemos se o usuário está autenticado, não renderizamos nada
+  // Enquanto não sabemos se o utilizador está autenticado, não renderizamos nada
   if (authenticated === null) return null;
 
   return (
-    <section>
-      <h2>Histórico de Documentos</h2>
+    <div className="home-page">
+      <div className="home-hero-bg" />
 
-      <button onClick={handleLogout} style={{ marginBottom: '1rem' }}>
-        Logout
-      </button>
-
-      {/* Botão de upload */}
-      <div style={{ marginTop: '1.5rem' }}>
-        <Link to="/upload" className="btn-primary">
-          Upload de novo PDF
+      <header className="home-nav">
+        <Link className="brand brand-link" to="/home" aria-label="Voltar ao início">
+          <div className="logo-dot" />
+          <div>
+            <p className="brand-kicker">AI4Juris</p>
+            <strong className="brand-title">Workspace</strong>
+          </div>
         </Link>
-      </div>
+        <nav className="nav-actions">
+          <Link className="nav-btn ghost" to="/groups">
+            Chat de Grupos
+          </Link>
+          <Link className="nav-btn ghost" to="/profile">
+            Perfil
+          </Link>
+          <button className="nav-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        </nav>
+      </header>
 
-      {/* Conteúdo */}
-      <div style={{ marginTop: '2rem' }}>
-        {loading ? (
-          <p>A carregar documentos...</p>
-        ) : documents.length === 0 ? (
-          <p>Sem documentos enviados ainda.</p>
-        ) : (
-          <ul>
-            {documents.map((doc) => (
-              <li key={doc.id} style={{ marginBottom: '1rem' }}>
-                <strong>{doc.title}</strong>
-                <br />
-                <small>
-                  Ficheiro: {doc.filename} <br />
-                  Estado: {doc.status} <br />
-                  Enviado em: {new Date(doc.uploaded_at).toLocaleString()}
-                </small>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </section>
+      <main className="home-shell">
+        <header className="home-heading">
+          <div>
+            <p className="eyebrow">Histórico</p>
+            <h1>Os teus uploads recentes</h1>
+            <p className="subhead">
+              Consulta PDFs enviados, estado de processamento e rótulos atribuídos. Etiquetas e justificações
+              aparecem quando o modelo devolver resultados.
+            </p>
+          </div>
+        </header>
+
+        <section className="cards-grid">
+          {loading ? (
+            <div className="placeholder-card">A carregar documentos...</div>
+          ) : documents.length === 0 ? (
+            <div className="placeholder-card">
+              <p className="empty-headline">Ainda não tens uploads.</p>
+              <p className="empty-body">Carrega um PDF para veres o histórico aqui.</p>
+            </div>
+          ) : (
+            documents.map((doc) => {
+              const uploaded =
+                doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleString() : 'Data não disponível';
+              const labels = doc.labels && doc.labels.length ? doc.labels : doc.classification ? [doc.classification] : [];
+              const justification = doc.justification || doc.explanation || 'Sem justificação disponível.';
+
+              return (
+                <article key={doc.id} className="doc-card">
+                  <div className="doc-card__top">
+                    <div>
+                      <p className="doc-date">{uploaded}</p>
+                      <h3 className="doc-title">{doc.title || doc.filename}</h3>
+                      <p className="doc-file">{doc.filename}</p>
+                    </div>
+                    <span className={`status-pill status-${(doc.status || 'pending').toLowerCase()}`}>
+                      {doc.status || 'Pendente'}
+                    </span>
+                  </div>
+
+                  {/* Labels e justificação que vêm do modelo */}
+                  <div className="doc-body">
+                    <div className="doc-tags">
+                      {(labels.length ? labels : ['Sem rótulos']).map((label, idx) => (
+                        <span key={idx} className="tag-chip">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="doc-just">{justification}</p>
+                  </div>
+                </article>
+              );
+            })
+          )}
+        </section>
+      </main>
+
+      {/* Botão flutuante de upload */}
+      <Link to="/upload" className="fab-upload" aria-label="Upload de PDF">
+        <span className="fab-plus">+</span>
+        <span className="fab-label">Upload PDF</span>
+      </Link>
+    </div>
   );
 }
 
