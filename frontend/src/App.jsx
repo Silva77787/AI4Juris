@@ -1,5 +1,4 @@
 import './styles/App.css';
-import './styles/auth.css';
 
 import { Routes, Route } from 'react-router-dom';
 
