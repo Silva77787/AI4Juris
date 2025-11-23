@@ -1,0 +1,147 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap");
+
+/* Reutiliza as variáveis globais da Home */
+:root {
+  --bg: #0b1f3b;
+  --bg-2: #0f172a;
+  --card: #0f172a;
+  --muted: #8ea0c2;
+  --text: #e8edf8;
+  --accent: #2563eb;
+  --accent-2: #0ea5e9;
+  --border: rgba(255, 255, 255, 0.07);
+  --highlight: rgba(37, 99, 235, 0.12);
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+/* --- PAGE WRAPPER --- */
+.detail-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at 25% 20%, rgba(37, 99, 235, 0.16), transparent 40%),
+    radial-gradient(circle at 80% 25%, rgba(14, 165, 233, 0.16), transparent 38%),
+    radial-gradient(circle at 60% 80%, rgba(37, 99, 235, 0.12), transparent 40%),
+    linear-gradient(145deg, var(--bg), var(--bg-2));
+  padding: 0 24px 120px;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  position: relative;
+}
+
+.detail-shell {
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* --- HEADING / TITLE --- */
+.detail-heading {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-heading h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* --- SECTIONS --- */
+.detail-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-top: 24px;
+}
+
+.detail-section h2 {
+  margin: 0 0 15px;
+  color: var(--text);
+  font-size: 20px;
+}
+
+/* --- TEXT BOX --- */
+.doc-text {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: #d8e3ff;
+}
+
+/* --- PREDICTION CARDS --- */
+.prediction-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.prediction-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: var(--accent-2);
+}
+
+.score {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* --- EXPLANATION BOXES --- */
+.explanation-box {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+}
+
+.explanation-box p {
+  margin: 4px 0;
+}
+
+/* --- METRICS TABLE ROWS --- */
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.metric-row:last-child {
+  border-bottom: none;
+}
+
+.metric-row p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* STATUS PILL — reutiliza estilo da homepage */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  text-transform: capitalize;
+  border: 1px solid var(--border);
+  min-width: 90px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.status-queued { color: #60a5fa; background: rgba(96,165,250,0.15); }
+.status-processing { color: #fbbf24; background: rgba(251,191,36,0.12); }
+.status-done { color: #34d399; background: rgba(52,211,153,0.12); }
+.status-error { color: #f87171; background: rgba(248,113,113,0.12); }

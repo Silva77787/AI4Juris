@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage.jsx';
 import UploadPage from './pages/UploadPage.jsx';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 import GroupsPage from './pages/GroupsPage.jsx';
+import DocumentDetailPage from './pages/DocumentDetailPage.jsx';
 
 import PrivateRoute from './components/PrivateRoute.jsx'; // novo componente para proteção de rotas
 
@@ -46,6 +47,14 @@ function App() {
         element={
           <PrivateRoute>
             <GroupsPage />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/documents/:id" 
+        element={
+          <PrivateRoute>
+            <DocumentDetailPage />
           </PrivateRoute>
         } 
       />

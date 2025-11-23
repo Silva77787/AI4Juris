@@ -108,7 +108,13 @@ function HomePage() {
               const justification = doc.justification || doc.explanation || 'Sem justificação disponível.';
 
               return (
-                <article key={doc.id} className="doc-card">
+                <Link
+                  key={doc.id}
+                  to={`/documents/${doc.id}`}
+                  className="doc-card-link"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                <article className="doc-card">
                   <div className="doc-card__top">
                     <div>
                       <p className="doc-date">{uploaded}</p>
@@ -132,6 +138,7 @@ function HomePage() {
                     <p className="doc-just">{justification}</p>
                   </div>
                 </article>
+                </Link>
               );
             })
           )}

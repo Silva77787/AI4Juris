@@ -3,6 +3,12 @@ from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Document, Prediction, Explanation, Metric
+from .serializers import DocumentDetailSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
@@ -136,6 +142,96 @@ def upload_document(request):
         "labels": [],
     }
     return Response(created, status=status.HTTP_201_CREATED)
+
+# --- DETALHES ---
+
+#Possivel codigo correto
+
+#@api_view(["GET"])
+#@permission_classes([IsAuthenticated])
+#def document_detail(request, pk):
+#    try:
+#        doc = Document.objects.get(pk=pk, user=request.user)
+#    except Document.DoesNotExist:
+#        return Response({"error": "Documento não encontrado"}, status=404)
+#    serializer = DocumentDetailSerializer(doc)
+#    return Response(serializer.data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def document_detail(request, pk):
+
+    data = [
+        {
+            "id": 1,
+            "filename": "acordao_1.pdf",
+            "state": "DONE",
+            "text": "Texto extraído do Acórdão 1…",
+            "duration_ms": 1800,
+            "n_descriptors": 2,
+            "error_msg": "",
+            "created_at": "2025-11-10T12:00:00Z",
+            "updated_at": "2025-11-10T12:05:00Z",
+            "predictions": [
+                {
+                    "id": 1,
+                    "descriptor": "Direito Penal",
+                    "score": 0.93,
+                    "explanations": [
+                        {
+                            "id": 1,
+                            "text_span": "O arguido foi condenado…",
+                            "start_offset": 210,
+                            "end_offset": 260,
+                            "score": 0.89
+                        }
+                    ]
+                },
+                {
+                    "id": 2,
+                    "descriptor": "Recurso",
+                    "score": 0.88,
+                    "explanations": [
+                        {
+                            "id": 2,
+                            "text_span": "Foi interposto recurso…",
+                            "start_offset": 400,
+                            "end_offset": 440,
+                            "score": 0.90
+                        }
+                    ]
+                }
+            ],
+            "metrics": [
+                { "id": 1, "stage": "OCR", "duration_ms": 500, "created_at": "2025-11-10T12:01:00Z" },
+                { "id": 2, "stage": "LLM Processing", "duration_ms": 1100, "created_at": "2025-11-10T12:03:00Z" },
+                { "id": 3, "stage": "Post-processing", "duration_ms": 200, "created_at": "2025-11-10T12:04:00Z" }
+            ]
+        },
+        {
+            "id": 2,
+            "filename": "acordao_2.pdf",
+            "state": "PROCESSING",
+            "text": "",
+            "duration_ms": "",
+            "n_descriptors": 0,
+            "error_msg": "",
+            "created_at": "2025-11-11T09:30:00Z",
+            "updated_at": "2025-11-11T09:30:00Z",
+            "predictions": [],
+            "metrics": []
+        }
+    ]
+
+    # Procurar o documento com o id solicitado
+    document = next((item for item in data if item["id"] == int(pk)), None)
+
+    if not document:
+        return Response({"detail": "Documento não encontrado."}, status=404)
+
+    return Response(document)
+
 
 
 # --- GRUPOS ---
