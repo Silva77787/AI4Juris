@@ -17,5 +17,11 @@ urlpatterns = [
     path('documents/upload/', views.upload_document, name='upload_document'),
 
     # Grupos
-    path('groups/', views.list_groups, name='list_groups'),
+    path('groups/create/', views.create_group, name='create_group'),
+    path('groups/my/', views.my_groups, name='my_groups'),
+    path('groups/<int:group_id>/members/', views.group_members, name='group_members'),
+    path('groups/<int:group_id>/invite/', views.invite_member, name='invite_member'),
+    path('groups/join/<uuid:invite_code>/', views.join_group, name='join_group'),
+    path('groups/<int:group_id>/promote/<int:user_id>/', views.promote_to_admin, name='promote_to_admin'),
+    path('groups/<int:group_id>/demote/<int:user_id>/', views.demote_to_member, name='demote_to_member'),
 ]
