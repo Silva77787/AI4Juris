@@ -15,7 +15,8 @@ urlpatterns = [
     # Documentos
     path('documents/', views.list_documents, name='list_documents'),
     path('documents/upload/', views.upload_document, name='upload_document'),
-    path("documents/<int:pk>/", views.document_detail),
+    path("documents/<int:pk>/", views.document_detail, name="document_detail"),
+    path("documents/<int:pk>/download/", views.download_document, name="document_download"),
 
     # Grupos
     path('groups/', views.list_groups, name='list_groups'),

@@ -12,6 +12,13 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7
+    container_name: ai4juris_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
   web:
     build:
       context: ./backend
@@ -23,10 +30,30 @@ services:
       DB_PASSWORD: admin123
       DB_HOST: db
       DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
     ports:
       - "7777:8000" # porta externa para o backend
     depends_on:
       - db
+      - redis
+
+  worker:
+    build:
+      context: ./backend
+    container_name: ai4juris_worker
+    command: celery -A config worker -l info --queues=documents
+    environment:
+      DB_NAME: ai4jurisdb
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      DB_HOST: db
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
 
   frontend:
     build:

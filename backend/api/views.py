@@ -2,14 +2,23 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.contrib.auth import authenticate, get_user_model
+from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Document, Prediction, Explanation, Metric
 from .serializers import DocumentDetailSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import Document
+from .serializers import DocumentDetailSerializer, DocumentSerializer
+from .tasks import process_document
 
 User = get_user_model()
 
@@ -30,24 +39,18 @@ def register(request):
     password = data.get("password")
     name = data.get("name", "")
 
-    # Validação
     if not email or not password:
         return Response(
-            {"error": "Email e password obrigatórios"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     if User.objects.filter(email=email).exists():
         return Response(
-            {"error": "Email já registado"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     # Criar utilizador
     user = User.objects.create_user(
-        username=email, 
-        email=email, 
-        password=password, 
         first_name=name
     )
 
@@ -68,19 +71,15 @@ def login(request):
     email = data.get("email")
     password = data.get("password")
 
-    # Validação
     if not email or not password:
         return Response(
-            {"error": "Email e password obrigatórios"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Autenticação
     user = authenticate(username=email, password=password)
 
     if user is None:
         return Response(
-            {"error": "Credenciais inválidas"},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
@@ -99,139 +98,66 @@ def login(request):
 # --- DOCUMENTOS / HISTÓRICO ---
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def list_documents(request):
     """
-    Lista de documentos para a tua Home / Histórico.
-    Neste momento dados estáticos só para testar o frontend.
+    Lista real de documentos do utilizador autenticado.
     """
-    documents = [
-        {
-            "id": 1,
-            "title": "Acórdão 1",
-            "filename": "acordao_1.pdf",
-            "uploaded_at": "2025-11-10T12:00:00Z",
-            "status": "processed",
-            "labels": ["Direito Penal", "Recurso"],
-        },
-        {
-            "id": 2,
-            "title": "Acórdão 2",
-            "filename": "acordao_2.pdf",
-            "uploaded_at": "2025-11-11T09:30:00Z",
-            "status": "processing",
-            "labels": [],
-        },
-    ]
-    return Response(documents)
+    documents = Document.objects.filter(user=request.user).order_by("-created_at")
+    serializer = DocumentSerializer(documents, many=True, context={"request": request})
+    return Response(serializer.data)
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def upload_document(request):
     """
-    Endpoint de upload simplificado.
-    Por agora assume que recebes JSON (title, description, etc.)
-    Mais tarde mudamos para multipart com ficheiro real.
+    Upload de PDF. Guarda o ficheiro, cria o registo e envia para processamento assincrono.
     """
-    data = request.data
-    created = {
-        "id": 3,
-        "title": data.get("title", "Documento sem título"),
-        "filename": data.get("filename", "ficheiro.pdf"),
-        "uploaded_at": "2025-11-15T10:00:00Z",
-        "status": "processing",
-        "labels": [],
-    }
-    return Response(created, status=status.HTTP_201_CREATED)
+    uploaded_file = request.FILES.get("file")
+
+    if uploaded_file is None:
+        return Response({"error": "Campo 'file' e obrigatorio (multipart/form-data)."}, status=status.HTTP_400_BAD_REQUEST)
+
+    filename = request.data.get("filename") or uploaded_file.name
+
+    document = Document.objects.create(
+        user=request.user,
+        file=uploaded_file,
+        filename=filename,
+        state="QUEUED",
+    )
+
+    # Enfileirar processamento do PDF
+    process_document.delay(document.id)
+
+    serializer = DocumentSerializer(document, context={"request": request})
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 # --- DETALHES ---
-
-#Possivel codigo correto
-
-#@api_view(["GET"])
-#@permission_classes([IsAuthenticated])
-#def document_detail(request, pk):
-#    try:
-#        doc = Document.objects.get(pk=pk, user=request.user)
-#    except Document.DoesNotExist:
-#        return Response({"error": "Documento não encontrado"}, status=404)
-#    serializer = DocumentDetailSerializer(doc)
-#    return Response(serializer.data)
-
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def document_detail(request, pk):
+    document = get_object_or_404(Document, pk=pk, user=request.user)
+    serializer = DocumentDetailSerializer(document, context={"request": request})
+    return Response(serializer.data)
 
-    data = [
-        {
-            "id": 1,
-            "filename": "acordao_1.pdf",
-            "state": "DONE",
-            "text": "Texto extraído do Acórdão 1…",
-            "duration_ms": 1800,
-            "n_descriptors": 2,
-            "error_msg": "",
-            "created_at": "2025-11-10T12:00:00Z",
-            "updated_at": "2025-11-10T12:05:00Z",
-            "predictions": [
-                {
-                    "id": 1,
-                    "descriptor": "Direito Penal",
-                    "score": 0.93,
-                    "explanations": [
-                        {
-                            "id": 1,
-                            "text_span": "O arguido foi condenado…",
-                            "start_offset": 210,
-                            "end_offset": 260,
-                            "score": 0.89
-                        }
-                    ]
-                },
-                {
-                    "id": 2,
-                    "descriptor": "Recurso",
-                    "score": 0.88,
-                    "explanations": [
-                        {
-                            "id": 2,
-                            "text_span": "Foi interposto recurso…",
-                            "start_offset": 400,
-                            "end_offset": 440,
-                            "score": 0.90
-                        }
-                    ]
-                }
-            ],
-            "metrics": [
-                { "id": 1, "stage": "OCR", "duration_ms": 500, "created_at": "2025-11-10T12:01:00Z" },
-                { "id": 2, "stage": "LLM Processing", "duration_ms": 1100, "created_at": "2025-11-10T12:03:00Z" },
-                { "id": 3, "stage": "Post-processing", "duration_ms": 200, "created_at": "2025-11-10T12:04:00Z" }
-            ]
-        },
-        {
-            "id": 2,
-            "filename": "acordao_2.pdf",
-            "state": "PROCESSING",
-            "text": "",
-            "duration_ms": "",
-            "n_descriptors": 0,
-            "error_msg": "",
-            "created_at": "2025-11-11T09:30:00Z",
-            "updated_at": "2025-11-11T09:30:00Z",
-            "predictions": [],
-            "metrics": []
-        }
-    ]
 
-    # Procurar o documento com o id solicitado
-    document = next((item for item in data if item["id"] == int(pk)), None)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def download_document(request, pk):
+    """
+    Endpoint para recuperar o PDF armazenado.
+    """
+    document = get_object_or_404(Document, pk=pk, user=request.user)
 
-    if not document:
-        return Response({"detail": "Documento não encontrado."}, status=404)
+    if not document.file:
+        return Response({"detail": "Ficheiro nao encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
-    return Response(document)
-
+    return FileResponse(document.file.open("rb"), as_attachment=True, filename=document.filename)
 
 
 # --- GRUPOS ---
@@ -239,7 +165,7 @@ def document_detail(request, pk):
 @api_view(['GET'])
 def list_groups(request):
     """
-    Lista de grupos para a página /groups.
+    Lista de grupos para a pagina /groups.
     """
     groups = [
         {
@@ -249,7 +175,7 @@ def list_groups(request):
         },
         {
             "id": 2,
-            "name": "Investigação Direito Penal",
+            "name": "Investigacao Direito Penal",
             "members_count": 5,
         },
     ]

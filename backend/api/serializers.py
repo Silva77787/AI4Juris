@@ -1,6 +1,20 @@
 from rest_framework import serializers
 from .models import Document, Prediction, Explanation, Metric
 
+
+class DocumentSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Document
+        fields = ["id", "filename", "state", "created_at", "updated_at", "file_url"]
+
+    def get_file_url(self, obj):
+        if obj.file and hasattr(obj.file, "url"):
+            request = self.context.get("request")
+            return request.build_absolute_uri(obj.file.url) if request else obj.file.url
+        return None
+
 class ExplanationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Explanation
@@ -21,6 +35,7 @@ class MetricSerializer(serializers.ModelSerializer):
 class DocumentDetailSerializer(serializers.ModelSerializer):
     predictions = PredictionSerializer(many=True, read_only=True, source="prediction_set")
     metrics = MetricSerializer(many=True, read_only=True, source="metric_set")
+    file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Document
@@ -34,6 +49,13 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
             "error_msg",
             "created_at",
             "updated_at",
+            "file_url",
             "predictions",
             "metrics",
         ]
+
+    def get_file_url(self, obj):
+        if obj.file and hasattr(obj.file, "url"):
+            request = self.context.get("request")
+            return request.build_absolute_uri(obj.file.url) if request else obj.file.url
+        return None
