@@ -39,18 +39,24 @@ def register(request):
     password = data.get("password")
     name = data.get("name", "")
 
+     # Validação
     if not email or not password:
         return Response(
+            {"error": "Email e password obrigatórios"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     if User.objects.filter(email=email).exists():
         return Response(
+            {"error": "Email já registado"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     # Criar utilizador
     user = User.objects.create_user(
+        username=email, 
+        email=email, 
+        password=password, 
         first_name=name
     )
 
@@ -70,16 +76,18 @@ def login(request):
     data = request.data
     email = data.get("email")
     password = data.get("password")
-
+    # Validação
     if not email or not password:
         return Response(
+            {"error": "Email e password obrigatórios"},
             status=status.HTTP_400_BAD_REQUEST
         )
-
+    # Autenticação
     user = authenticate(username=email, password=password)
 
     if user is None:
         return Response(
+            {"error": "Credenciais inválidas"},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
@@ -138,6 +146,19 @@ def upload_document(request):
 
 # --- DETALHES ---
 
+#Possivel codigo correto
+
+
+#@api_view(["GET"])
+#@permission_classes([IsAuthenticated])
+#def document_detail(request, pk):
+#    try:
+#        doc = Document.objects.get(pk=pk, user=request.user)
+#    except Document.DoesNotExist:
+#        return Response({"error": "Documento não encontrado"}, status=404)
+#    serializer = DocumentDetailSerializer(doc)
+#    return Response(serializer.data)
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def document_detail(request, pk):
@@ -165,7 +186,7 @@ def download_document(request, pk):
 @api_view(['GET'])
 def list_groups(request):
     """
-    Lista de grupos para a pagina /groups.
+    Lista de grupos para a página /groups.
     """
     groups = [
         {
@@ -175,7 +196,7 @@ def list_groups(request):
         },
         {
             "id": 2,
-            "name": "Investigacao Direito Penal",
+            "name": "Investigação Direito Penal",
             "members_count": 5,
         },
     ]
