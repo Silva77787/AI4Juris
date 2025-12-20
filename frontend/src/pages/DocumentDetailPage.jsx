@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import "../styles/DocumentDetailPage.css";
+import TopBar from "../components/TopBar.jsx";
 
 function DocumentDetailPage() {
   const { id } = useParams();
@@ -33,84 +34,105 @@ function DocumentDetailPage() {
       });
   }, [id, navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    navigate('/');
-  };
+  const snippets = useMemo(() => {
+    const collected = [];
+    const predictions = Array.isArray(data?.predictions) ? data.predictions : [];
+    predictions.forEach((prediction) => {
+      const explanations = Array.isArray(prediction.explanations)
+        ? prediction.explanations
+        : [];
+      explanations.forEach((ex) => {
+        if (ex.text_span) collected.push(ex.text_span);
+      });
+    });
+    return [...new Set(collected)].slice(0, 3);
+  }, [data]);
 
   if (loading) return <div className="loading">A carregar…</div>;
   if (!data) return <div className="error">Documento não encontrado.</div>;
 
-  return (
-    
-    
+  const labels = (() => {
+    if (Array.isArray(data.labels) && data.labels.length) return data.labels;
+    if (data.classification) return [data.classification];
+    if (Array.isArray(data.predictions) && data.predictions.length) {
+      const descriptors = data.predictions
+        .map((prediction) => prediction.descriptor)
+        .filter(Boolean);
+      if (descriptors.length) return descriptors;
+    }
+    return [];
+  })();
+  const justification = data.justification || data.explanation || data.summary || "";
+  const status = (data.state || data.status || "pending").toLowerCase();
+  const uploadedAt = data.uploaded_at || data.created_at;
 
+  return (
     <div className="detail-page">
-      <header className="home-nav">
-        <Link className="brand brand-link" to="/home">
-          <div className="logo-dot" />
-          <div>
-            <p className="brand-kicker">AI4Juris</p>
-            <strong className="brand-title">Workspace</strong>
-          </div>
-        </Link>
-        <nav className="nav-actions">
-          <Link className="nav-btn ghost" to="/groups">
-            Chat de Grupos
-          </Link>
-          <Link className="nav-btn ghost" to="/profile">
-            Perfil
-          </Link>
-          <button className="nav-btn" onClick={handleLogout}>
-            Logout
-          </button>
-        </nav>
-      </header>
+      <TopBar title="Detalhes" />
 
       <main className="detail-shell">
         <header className="detail-heading">
           <h1>{data.filename}</h1>
-          <span className={`status-pill status-${data.state.toLowerCase()}`}>
-            {data.state}
+          <span className={`status-pill status-${status}`}>
+            {data.state || data.status || "Pendente"}
           </span>
         </header>
 
-        <section className="detail-section">
-          <h2>Texto extraído</h2>
-          <p className="doc-text">{data.text || "Sem texto extraído."}</p>
-        </section>
-
-        <section className="detail-section">
-          <h2>Predições do Modelo</h2>
-          {data.predictions.length === 0 ? (
-            <p>Nenhuma predição disponível.</p>
-          ) : (
-            data.predictions.map((p) => (
-              <div key={p.id} className="prediction-card">
-                <h3>{p.descriptor}</h3>
-                <p className="score">Score: {p.score.toFixed(3)}</p>
-
-                {p.explanations.map((ex) => (
-                  <div key={ex.id} className="explanation-box">
-                    <p><strong>Trecho:</strong> {ex.text_span}</p>
-                    <p>Score: {ex.score.toFixed(3)}</p>
-                  </div>
-                ))}
-              </div>
-            ))
-          )}
-        </section>
-
-        <section className="detail-section">
-          <h2>Métricas</h2>
-          {data.metrics.map((m) => (
-            <div key={m.id} className="metric-row">
-              <p>{m.stage}</p>
-              <p>{m.duration_ms} ms</p>
-              <p>{new Date(m.created_at).toLocaleString()}</p>
+        <section className="detail-section detail-summary">
+          <h2>Essencial</h2>
+          <div className="summary-grid">
+            <div>
+              <p className="summary-label">Ficheiro</p>
+              <p className="summary-value">{data.filename || "—"}</p>
             </div>
-          ))}
+            <div>
+              <p className="summary-label">Data de upload</p>
+              <p className="summary-value">
+                {uploadedAt ? new Date(uploadedAt).toLocaleString() : "—"}
+              </p>
+            </div>
+            <div>
+              <p className="summary-label">Páginas</p>
+              <p className="summary-value">{data.page_count || data.pages || "—"}</p>
+            </div>
+            <div>
+              <p className="summary-label">Origem</p>
+              <p className="summary-value">{data.source || "—"}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="detail-section">
+          <h2>Classificação</h2>
+          <div className="tags-row">
+            {(labels.length ? labels : ["Sem rótulos"]).map((label, idx) => (
+              <span key={`${label}-${idx}`} className="tag-chip">
+                {label}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <section className="detail-section">
+          <h2>Justificação</h2>
+          <div className="just-box">
+            {justification ? <p>{justification}</p> : <p>Sem justificação disponível.</p>}
+          </div>
+        </section>
+
+        <section className="detail-section">
+          <h2>Trechos relevantes</h2>
+          {snippets.length ? (
+            <div className="snippet-list">
+              {snippets.map((snippet, idx) => (
+                <div key={`snippet-${idx}`} className="snippet-card">
+                  {snippet}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>Sem trechos relevantes disponíveis.</p>
+          )}
         </section>
       </main>
     </div>

@@ -28,12 +28,19 @@ def register(request):
     data = request.data
     email = data.get("email")
     password = data.get("password")
+    confirm_password = data.get("confirm_password")
     name = data.get("name", "")
 
     # Validação
     if not email or not password:
         return Response(
             {"error": "Email e password obrigatórios"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if confirm_password is None or password != confirm_password:
+        return Response(
+            {"error": "As passwords não coincidem"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -94,6 +101,62 @@ def login(request):
         "tokens": tokens
     }, status=status.HTTP_200_OK)
 
+
+# --- PERFIL ---
+
+@api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def profile(request):
+    user = request.user
+
+    if request.method == 'GET':
+        return Response({
+            "id": user.id,
+            "name": user.first_name,
+            "email": user.email,
+        }, status=status.HTTP_200_OK)
+
+    data = request.data
+    name = data.get("name")
+    email = data.get("email")
+    current_password = data.get("current_password")
+    new_password = data.get("new_password")
+    confirm_password = data.get("confirm_password")
+
+    name_changed = name is not None and name != user.first_name
+    email_changed = email is not None and email != user.email
+
+    if name_changed or email_changed:
+        if not current_password:
+            return Response({"error": "Password atual obrigatória"}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.check_password(current_password):
+            return Response({"error": "Password atual incorreta"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if email and email != user.email:
+        if User.objects.filter(email=email).exclude(pk=user.pk).exists():
+            return Response({"error": "Email já registado"}, status=status.HTTP_400_BAD_REQUEST)
+        user.email = email
+        user.username = email
+
+    if name is not None:
+        user.first_name = name
+
+    if new_password or confirm_password:
+        if not current_password:
+            return Response({"error": "Password atual obrigatória"}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.check_password(current_password):
+            return Response({"error": "Password atual incorreta"}, status=status.HTTP_400_BAD_REQUEST)
+        if new_password != confirm_password:
+            return Response({"error": "As passwords não coincidem"}, status=status.HTTP_400_BAD_REQUEST)
+        user.set_password(new_password)
+
+    user.save()
+
+    return Response({
+        "id": user.id,
+        "name": user.first_name,
+        "email": user.email,
+    }, status=status.HTTP_200_OK)
 
 
 # --- DOCUMENTOS / HISTÓRICO ---

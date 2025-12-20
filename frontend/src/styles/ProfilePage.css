@@ -1,0 +1,359 @@
+.profile-shell {
+  max-width: 1100px;
+}
+
+.profile-hero h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.profile-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.edit-btn {
+  padding: 8px 14px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.stat-card {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.stat-value {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.stat-label {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.profile-card {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.profile-latest {
+  margin-top: 18px;
+}
+
+.profile-form {
+  margin-top: 18px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 12, 24, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+
+.modal-card {
+  width: min(520px, 100%);
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  box-sizing: border-box;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.modal-header h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.modal-close {
+  border: none;
+  background: rgba(12, 23, 48, 0.9);
+  color: #e8edf8;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  background: rgba(25, 45, 84, 0.95);
+}
+
+.modal-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.modal-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.modal-form input {
+  background: rgba(12, 23, 48, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #e8edf8;
+}
+
+.modal-form input:-webkit-autofill,
+.modal-form input:-webkit-autofill:hover,
+.modal-form input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #e8edf8;
+  box-shadow: 0 0 0 1000px rgba(12, 23, 48, 0.95) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.modal-form .full-row {
+  grid-column: 1 / -1;
+}
+
+.form-message {
+  width: 100%;
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin: 8px 0 14px;
+  font-size: 13px;
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+}
+
+.form-error {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+  grid-column: 1 / -1;
+}
+
+.profile-card h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chip-row {
+  display: flex;
+  gap: 8px;
+}
+
+.chip-btn {
+  border: 1px solid var(--border);
+  background: rgba(12, 23, 48, 0.85);
+  color: #dfe8ff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chip-btn.active {
+  border-color: rgba(130, 207, 255, 0.45);
+}
+
+.chart-wrap svg {
+  width: 100%;
+  height: 180px;
+}
+
+.chart-wrap polyline {
+  fill: none;
+  stroke: #4ea8ff;
+  stroke-width: 3;
+}
+
+.chart-axis {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 4px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.donut-wrap {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.donut-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 26px;
+  background: rgba(15, 23, 42, 0.92);
+  border-radius: 50%;
+}
+
+.legend {
+  margin-top: 16px;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  color: #dfe8ff;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+.legend-dot-1 { background: #22c1dc; }
+.legend-dot-2 { background: #f59e0b; }
+.legend-dot-3 { background: #8b5cf6; }
+
+.profile-latest .table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 1.3fr 0.8fr 1fr 0.9fr;
+  gap: 12px;
+  font-size: 13px;
+  color: #dfe8ff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(12, 23, 48, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.table-head {
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 11px;
+  background: transparent;
+  border: none;
+  padding: 0 2px 0;
+}
+
+.profile-latest .table-head {
+  padding-bottom: 6px;
+}
+
+
+.profile-form .form-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.profile-form input {
+  background: rgba(12, 23, 48, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #e8edf8;
+}
+
+.save-btn {
+  justify-self: start;
+  border: none;
+  background: linear-gradient(135deg, #6ad6ff, #315ef5);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 10px 20px rgba(49, 94, 245, 0.35);
+  transform: translateY(-1px);
+}
+
+.saved-pill {
+  background: rgba(52, 211, 153, 0.16);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+@media (max-width: 900px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}

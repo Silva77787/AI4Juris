@@ -19,4 +19,7 @@ urlpatterns = [
 
     # Grupos
     path('groups/', views.list_groups, name='list_groups'),
+
+    # Perfil
+    path('profile/', views.profile, name='profile'),
 ]

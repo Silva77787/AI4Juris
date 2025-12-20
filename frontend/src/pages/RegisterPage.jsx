@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 function RegisterPage({ showToast }) {
   const navigate = useNavigate();
-  const [state, setState] = React.useState({ name: "", email: "", password: "" });
+  const [state, setState] = React.useState({ name: "", email: "", password: "", confirmPassword: "" });
 
   const handleChange = (evt) => {
     setState({ ...state, [evt.target.name]: evt.target.value });
@@ -12,8 +12,13 @@ function RegisterPage({ showToast }) {
   const handleOnSubmit = async (evt) => {
     evt.preventDefault();
 
-    if (!state.name || !state.email || !state.password) {
+    if (!state.name || !state.email || !state.password || !state.confirmPassword) {
       showToast("Todos os campos são obrigatórios", "error");
+      return;
+    }
+
+    if (state.password !== state.confirmPassword) {
+      showToast("As passwords não coincidem", "error");
       return;
     }
 
@@ -21,7 +26,12 @@ function RegisterPage({ showToast }) {
       const response = await fetch("http://localhost:7777/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(state),
+        body: JSON.stringify({
+          name: state.name,
+          email: state.email,
+          password: state.password,
+          confirm_password: state.confirmPassword,
+        }),
       });
 
       const data = await response.json();
@@ -35,7 +45,7 @@ function RegisterPage({ showToast }) {
       localStorage.setItem("accessToken", data.tokens.access);
       localStorage.setItem("refreshToken", data.tokens.refresh);
 
-      setState({ name: "", email: "", password: "" });
+      setState({ name: "", email: "", password: "", confirmPassword: "" });
       showToast("Conta criada com sucesso!", "success");
 
       setTimeout(() => navigate("/home"), 1000);
@@ -53,6 +63,13 @@ function RegisterPage({ showToast }) {
         <input type="text" name="name" value={state.name} onChange={handleChange} placeholder="Nome" />
         <input type="email" name="email" value={state.email} onChange={handleChange} placeholder="Email" />
         <input type="password" name="password" value={state.password} onChange={handleChange} placeholder="Palavra-passe" />
+        <input
+          type="password"
+          name="confirmPassword"
+          value={state.confirmPassword}
+          onChange={handleChange}
+          placeholder="Repetir palavra-passe"
+        />
         <button type="submit">Criar conta</button>
       </form>
     </div>
