@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/HomePage.css';
 import TopBar from '../components/TopBar.jsx';
+import { config } from "../utils/config";  
 
 function HomePage() {
   const [documents, setDocuments] = useState([]);
@@ -28,7 +29,7 @@ function HomePage() {
 
     setAuthenticated(true);
 
-    fetch('http://localhost:7777/documents/', {
+    fetch(`${config.apiUrl}/documents/`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
