@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/DocumentDetailPage.css";
 import TopBar from "../components/TopBar.jsx";
+import { config } from "../utils/config";  
 
 function DocumentDetailPage() {
   const { id } = useParams();
@@ -14,7 +15,7 @@ function DocumentDetailPage() {
     const token = localStorage.getItem("accessToken");
     if (!token) return navigate("/");
 
-    fetch(`http://localhost:7777/documents/${id}/`, {
+    fetch(`${config.apiUrl}/documents/${id}/`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`

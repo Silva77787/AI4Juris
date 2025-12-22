@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import TopBar from '../components/TopBar.jsx';
 import '../styles/HomePage.css';
 import '../styles/ProfilePage.css';
-
+import { config } from "../utils/config";
 const mockStats = {
   totalUploads: 151,
   processed: 114,
@@ -87,7 +87,7 @@ function ProfilePage() {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    fetch('http://localhost:7777/profile/', {
+    fetch(`${config.apiUrl}/profile/`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
