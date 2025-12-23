@@ -45,3 +45,4 @@ npm run dev   # http://localhost:5173
 ## Notas
 - As migrações da base correm automaticamente no arranque via entrypoint do backend.
 - O frontend chama o backend em `http://localhost:7777`.
+- BD internal URL : postgresql://admin:JBWFFVleFw6C4OpQh0pM7i3rfOsyP762@dpg-d54piieuk2gs73bgob7g-a/ai4jurisdb
