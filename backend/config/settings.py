@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     # terceiros
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
 
     # tuas apps
