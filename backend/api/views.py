@@ -321,3 +321,14 @@ def list_groups(request):
         },
     ]
     return Response(groups)
+
+
+
+@api_view(['GET'])
+def healthcheck(request):
+    """Endpoint simples para testar se a API está a funcionar"""
+    return Response({
+        "status": "ok",
+        "debug": settings.DEBUG,
+        "database": "connected" if connection.ensure_connection() is None else "error"
+    })
