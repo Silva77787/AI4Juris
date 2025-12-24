@@ -58,7 +58,7 @@ UserModel = settings.AUTH_USER_MODEL
 
 
 class Group(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
 
     # owner principal (criador)
     owner = models.ForeignKey(

@@ -308,6 +308,10 @@ def create_group(request):
     if not name:
         return Response({"error": "Nome do grupo é obrigatório"}, status=400)
 
+    name = name.strip()
+    if Group.objects.filter(name__iexact=name).exists():
+        return Response({"error": "Já existe um grupo com esse nome"}, status=400)
+
     group = Group.objects.create(name=name, owner=request.user)
 
     GroupMembership.objects.create(
@@ -604,3 +608,51 @@ def demote_owner(request, group_id, user_id):
     target.save()
 
     return Response({"message": "Owner rebaixado para member com sucesso"})
+
+
+# -----------------------------
+# Remover membro do grupo (expulsar)
+# -----------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def remove_member(request, group_id, user_id):
+    group = get_object_or_404(Group, id=group_id)
+
+    requester = get_object_or_404(GroupMembership, group=group, user=request.user)
+    if requester.role != "owner":
+        return Response({"error": "Apenas owners podem remover membros"}, status=403)
+
+    if request.user.id == user_id:
+        return Response({"error": "Não podes remover-te do grupo"}, status=400)
+
+    target = get_object_or_404(GroupMembership, group=group, user_id=user_id)
+
+    if target.role == "owner":
+        owners = GroupMembership.objects.filter(group=group, role="owner").order_by("created_at")
+        if owners.count() <= 1:
+            return Response({"error": "O grupo tem de ter pelo menos um owner"}, status=400)
+        oldest_owner = owners.first()
+        if requester != oldest_owner:
+            return Response({"error": "Apenas o owner mais antigo pode remover outro owner"}, status=403)
+
+    target.delete()
+    return Response({"message": "Membro removido do grupo com sucesso"})
+
+
+# -----------------------------
+# Sair do grupo
+# - member: remove membership
+# - owner: elimina o grupo (e todos os membros)
+# -----------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def leave_group(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    membership = get_object_or_404(GroupMembership, group=group, user=request.user)
+
+    if membership.role == "owner":
+        group.delete()
+        return Response({"message": "Grupo eliminado com sucesso"})
+
+    membership.delete()
+    return Response({"message": "Saíste do grupo com sucesso"})

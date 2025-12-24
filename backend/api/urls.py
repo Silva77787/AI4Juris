@@ -37,6 +37,8 @@ urlpatterns = [
     # Owners (roles)
     path('groups/<int:group_id>/promote/<int:user_id>/', views.promote_to_owner, name='promote_to_owner'),
     path('groups/<int:group_id>/demote/<int:user_id>/', views.demote_owner, name='demote_owner'),
+    path('groups/<int:group_id>/remove/<int:user_id>/', views.remove_member, name='remove_member'),
+    path('groups/<int:group_id>/leave/', views.leave_group, name='leave_group'),
 
     # Perfil
     path('profile/', views.profile, name='profile'),
