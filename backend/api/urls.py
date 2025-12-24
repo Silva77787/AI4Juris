@@ -20,6 +20,14 @@ urlpatterns = [
     # Grupos
     path('groups/', views.list_groups, name='list_groups'),
 
+    # Notificações
+    path('notifications/', views.list_notifications, name='list-notifications'),
+    path('notifications/count/', views.get_notification_count, name='notification-count'),
+    path('notifications/<int:pk>/', views.notification_detail, name='notification-detail'),
+    path('notifications/mark-all-as-read/', views.mark_all_notifications_as_read, name='mark-all-as-read'),
+    path('notifications/<int:pk>/delete/', views.delete_notification, name='delete-notification'),
+    path('notifications/delete-all/', views.delete_all_notifications, name='delete-all-notifications'),
+
     # Perfil
     path('profile/', views.profile, name='profile'),
 ]
