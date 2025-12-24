@@ -8,9 +8,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Document, Prediction, Explanation, Metric
-from .serializers import DocumentDetailSerializer
+from .models import Document, Prediction, Explanation, Metric, Notification
+from .serializers import DocumentDetailSerializer, NotificationSerializer, NotificationCreateSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils import timezone
 
 from .models import Group, GroupInvite, GroupMembership, JoinRequest
 from django.shortcuts import get_object_or_404
@@ -283,6 +284,7 @@ def my_groups(request):
             "invite_code": str(m.group.invite_code) if m.role == "owner" else None,
         })
     return Response(groups)
+
 
 
 @api_view(['GET'])
@@ -630,3 +632,168 @@ def leave_group(request, group_id):
 
     membership.delete()
     return Response({"message": "Saíste do grupo com sucesso"})
+
+# --- NOTIFICAÇÕES ---
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_notifications(request):
+    user = request.user
+    notifications = Notification.objects.filter(recipient=user)
+    
+    is_read_param = request.query_params.get('is_read')
+    if is_read_param is not None:
+        is_read = is_read_param.lower() == 'true'
+        notifications = notifications.filter(is_read=is_read)
+    
+    serializer = NotificationSerializer(notifications, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_notification_count(request):
+    user = request.user
+    unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
+    
+    return Response({
+        "unread_count": unread_count,
+        "total_count": Notification.objects.filter(recipient=user).count()
+    })
+
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def notification_detail(request, pk):
+    user = request.user
+    
+    try:
+        notification = Notification.objects.get(pk=pk, recipient=user)
+    except Notification.DoesNotExist:
+        return Response(
+            {"error": "Notificação não encontrada"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    if request.method == 'GET':
+        serializer = NotificationSerializer(notification)
+        return Response(serializer.data)
+    
+    elif request.method == 'PUT':
+        # Marcar como lida
+        if not notification.is_read:
+            notification.is_read = True
+            notification.read_at = timezone.now()
+            notification.save()
+        
+        serializer = NotificationSerializer(notification)
+        return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def mark_all_notifications_as_read(request):
+    user = request.user
+    now = timezone.now()
+    
+    notifications = Notification.objects.filter(recipient=user, is_read=False)
+    updated_count = notifications.update(is_read=True, read_at=now)
+    
+    return Response({
+        "message": f"{updated_count} notificações marcadas como lidas",
+        "updated_count": updated_count
+    })
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_notification(request, pk):
+    user = request.user
+    
+    try:
+        notification = Notification.objects.get(pk=pk, recipient=user)
+    except Notification.DoesNotExist:
+        return Response(
+            {"error": "Notificação não encontrada"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    notification.delete()
+    return Response(
+        {"message": "Notificação deletada com sucesso"},
+        status=status.HTTP_204_NO_CONTENT
+    )
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_all_notifications(request):
+    user = request.user
+    deleted_count, _ = Notification.objects.filter(recipient=user).delete()
+    
+    return Response({
+        "message": f"{deleted_count} notificações deletadas",
+        "deleted_count": deleted_count
+    })
+
+
+def create_notification(recipient, notification_type, title, message, document=None, related_user=None):
+    notification = Notification.objects.create(
+        recipient=recipient,
+        notification_type=notification_type,
+        title=title,
+        message=message,
+        document=document,
+        related_user=related_user
+    )
+    return notification
+
+
+def create_upload_notification(user, document, state):
+    state_messages = {
+        "QUEUED": {
+            "title": "Upload Enfileirado",
+            "message": f"O seu documento '{document.filename}' foi enfileirado para processamento.",
+            "type": "UPLOAD_QUEUED"
+        },
+        "PROCESSING": {
+            "title": "Processamento em Progresso",
+            "message": f"O documento '{document.filename}' está sendo processado. Por favor, aguarde…",
+            "type": "UPLOAD_PROCESSING"
+        },
+        "DONE": {
+            "title": "Upload Concluído ✓",
+            "message": f"O documento '{document.filename}' foi processado com sucesso! {document.n_descriptors} descritores encontrados.",
+            "type": "UPLOAD_DONE"
+        },
+        "ERROR": {
+            "title": "Erro no Processamento",
+            "message": f"Erro ao processar '{document.filename}': {document.error_msg}",
+            "type": "UPLOAD_ERROR"
+        },
+        "TIMEOUT": {
+            "title": "Tempo Limite Excedido",
+            "message": f"O processamento de '{document.filename}' excedeu o tempo limite.",
+            "type": "UPLOAD_ERROR"
+        }
+    }
+    
+    state_info = state_messages.get(state)
+    if state_info:
+        create_notification(
+            recipient=user,
+            notification_type=state_info["type"],
+            title=state_info["title"],
+            message=state_info["message"],
+            document=document
+        )
+
+
+def create_group_invite_notification(recipient, inviter, group_name):
+    create_notification(
+        recipient=recipient,
+        notification_type="GROUP_INVITE",
+        title=f"Convite para grupo: {group_name}",
+        message=f"{inviter.first_name or inviter.email} convidou-o para se juntar ao grupo '{group_name}'.",
+        related_user=inviter
+    )

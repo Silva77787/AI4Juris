@@ -54,6 +54,7 @@ class Metric(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+<<<<<<< HEAD
 
 UserModel = settings.AUTH_USER_MODEL
 
@@ -152,3 +153,49 @@ class JoinRequest(models.Model):
 
     def __str__(self):
         return f"JoinRequest {self.user} -> {self.group} ({self.status})"
+=======
+class Notification(models.Model):
+    """
+    Modelo para armazenar notificações de:
+    - Convites para grupos
+    - Status de uploads (QUEUED, PROCESSING, DONE, ERROR)
+    - Mensagens do sistema
+    """
+    
+    NOTIFICATION_TYPES = [
+        ("GROUP_INVITE", "Convite de Grupo"),
+        ("UPLOAD_QUEUED", "Upload Enfileirado"),
+        ("UPLOAD_PROCESSING", "Upload em Processamento"),
+        ("UPLOAD_DONE", "Upload Concluído"),
+        ("UPLOAD_ERROR", "Erro no Upload"),
+        ("SYSTEM", "Mensagem do Sistema"),
+    ]
+    
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPES)
+    
+    # Dados da notificação (flexível)
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    
+    # Relações opcionais
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, null=True, blank=True)
+    related_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="sent_invites")
+    
+    # Estado
+    is_read = models.BooleanField(default=False)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', '-created_at']),
+            models.Index(fields=['recipient', 'is_read']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_notification_type_display()} - {self.recipient.email}"
+>>>>>>> a65a407 (alertas)

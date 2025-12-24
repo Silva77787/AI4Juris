@@ -42,6 +42,14 @@ urlpatterns = [
     path('groups/<int:group_id>/remove/<int:user_id>/', views.remove_member, name='remove_member'),
     path('groups/<int:group_id>/leave/', views.leave_group, name='leave_group'),
 
+    # Notificações
+    path('notifications/', views.list_notifications, name='list-notifications'),
+    path('notifications/count/', views.get_notification_count, name='notification-count'),
+    path('notifications/<int:pk>/', views.notification_detail, name='notification-detail'),
+    path('notifications/mark-all-as-read/', views.mark_all_notifications_as_read, name='mark-all-as-read'),
+    path('notifications/<int:pk>/delete/', views.delete_notification, name='delete-notification'),
+    path('notifications/delete-all/', views.delete_all_notifications, name='delete-all-notifications'),
+
     # Perfil
     path('profile/', views.profile, name='profile'),
 ]
