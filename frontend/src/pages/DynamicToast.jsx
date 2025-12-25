@@ -15,7 +15,7 @@ function DynamicToast({ toasts, onDismiss }) {
             onClick={() => onDismiss && onDismiss(toast.id)}
             aria-label="Fechar notificacao"
           >
-            ×
+            x
           </button>
         </div>
       ))}

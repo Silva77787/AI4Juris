@@ -9,11 +9,15 @@ function LoginPage({ showToast }) {
     setState({ ...state, [evt.target.name]: evt.target.value });
   };
 
+  const setPendingToast = (message, type = "success") => {
+    localStorage.setItem("pendingToast", JSON.stringify({ message, type, ts: Date.now() }));
+  };
+
   const handleOnSubmit = async (evt) => {
     evt.preventDefault();
 
     if (!state.email || !state.password) {
-      showToast("Email e password são obrigatórios", "error");
+      showToast("Email e password sao obrigatorios", "error");
       return;
     }
 
@@ -27,16 +31,14 @@ function LoginPage({ showToast }) {
       const data = await response.json();
 
       if (!response.ok) {
-        showToast(data.error || "Credenciais inválidas", "error");
+        showToast(data.error || "Credenciais invalidas", "error");
         return;
       }
 
-      // Guardar tokens
       localStorage.setItem("accessToken", data.tokens.access);
       localStorage.setItem("refreshToken", data.tokens.refresh);
 
-      showToast("Login efetuado com sucesso!", "success");
-
+      setPendingToast("Login efetuado com sucesso!", "success");
       setState({ email: "", password: "" });
       navigate("/home");
     } catch (err) {
@@ -49,7 +51,7 @@ function LoginPage({ showToast }) {
     <div className="form-container sign-in-container">
       <form onSubmit={handleOnSubmit}>
         <h1>Entrar</h1>
-        <p className="login-subtitle">Aceda à plataforma AI4Juris</p>
+        <p className="login-subtitle">Acede a plataforma AI4Juris</p>
         <input type="email" name="email" value={state.email} onChange={handleChange} placeholder="Email" />
         <input type="password" name="password" value={state.password} onChange={handleChange} placeholder="Palavra-passe" />
         <button type="submit">Entrar</button>
