@@ -1,0 +1,114 @@
+.toast-stack {
+  position: fixed;
+  right: 28px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 80;
+  max-width: min(320px, 90vw);
+  width: min(320px, 90vw);
+}
+
+.toast-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(12, 23, 48, 0.92);
+  color: #e8edf8;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  animation: toast-life 5s ease forwards;
+  width: 100%;
+}
+
+.toast-card.success {
+  border-color: rgba(52, 211, 153, 0.4);
+  background: rgba(15, 44, 34, 0.9);
+  color: #a7f3d0;
+}
+
+.toast-card.error {
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(49, 16, 16, 0.85);
+  color: #fecaca;
+}
+
+.toast-message {
+  flex: 1;
+}
+
+.login-page .toast-card {
+  color: #e8edf8;
+}
+
+.login-page .toast-card.error {
+  color: #fecaca;
+}
+
+.login-page .toast-card.success {
+  color: #a7f3d0;
+}
+
+.login-page .toast-message {
+  color: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.toast-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: none;
+  border-radius: 50%;
+}
+
+.toast-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.login-page .toast-stack .toast-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: none;
+  border-radius: 50%;
+}
+
+@keyframes toast-life {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
