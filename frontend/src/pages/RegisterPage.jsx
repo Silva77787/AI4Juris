@@ -9,16 +9,20 @@ function RegisterPage({ showToast }) {
     setState({ ...state, [evt.target.name]: evt.target.value });
   };
 
+  const setPendingToast = (message, type = "success") => {
+    localStorage.setItem("pendingToast", JSON.stringify({ message, type, ts: Date.now() }));
+  };
+
   const handleOnSubmit = async (evt) => {
     evt.preventDefault();
 
     if (!state.name || !state.email || !state.password || !state.confirmPassword) {
-      showToast("Todos os campos são obrigatórios", "error");
+      showToast("Todos os campos sao obrigatorios", "error");
       return;
     }
 
     if (state.password !== state.confirmPassword) {
-      showToast("As passwords não coincidem", "error");
+      showToast("As passwords nao coincidem", "error");
       return;
     }
 
@@ -41,17 +45,15 @@ function RegisterPage({ showToast }) {
         return;
       }
 
-      // Guardar tokens
       localStorage.setItem("accessToken", data.tokens.access);
       localStorage.setItem("refreshToken", data.tokens.refresh);
 
       setState({ name: "", email: "", password: "", confirmPassword: "" });
-      showToast("Conta criada com sucesso!", "success");
-
-      setTimeout(() => navigate("/home"), 1000);
+      setPendingToast("Conta criada com sucesso!", "success");
+      navigate("/home");
     } catch (err) {
       console.error(err);
-      showToast("Erro ao registrar utilizador", "error");
+      showToast("Erro ao registar utilizador", "error");
     }
   };
 
@@ -59,7 +61,7 @@ function RegisterPage({ showToast }) {
     <div className="form-container sign-up-container">
       <form onSubmit={handleOnSubmit}>
         <h1>Criar conta</h1>
-        <p className="login-subtitle">Crie o seu acesso ao AI4Juris</p>
+        <p className="login-subtitle">Cria o teu acesso ao AI4Juris</p>
         <input type="text" name="name" value={state.name} onChange={handleChange} placeholder="Nome" />
         <input type="email" name="email" value={state.email} onChange={handleChange} placeholder="Email" />
         <input type="password" name="password" value={state.password} onChange={handleChange} placeholder="Palavra-passe" />
