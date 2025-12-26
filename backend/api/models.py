@@ -54,8 +54,6 @@ class Metric(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-<<<<<<< HEAD
-
 UserModel = settings.AUTH_USER_MODEL
 
 
@@ -153,7 +151,7 @@ class JoinRequest(models.Model):
 
     def __str__(self):
         return f"JoinRequest {self.user} -> {self.group} ({self.status})"
-=======
+
 class Notification(models.Model):
     """
     Modelo para armazenar notificações de:
@@ -198,4 +196,3 @@ class Notification(models.Model):
     
     def __str__(self):
         return f"{self.get_notification_type_display()} - {self.recipient.email}"
->>>>>>> a65a407 (alertas)
