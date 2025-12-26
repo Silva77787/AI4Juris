@@ -635,10 +635,20 @@ def leave_group(request, group_id):
 
 # --- NOTIFICAÇÕES ---
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def list_notifications(request):
     user = request.user
+    
+    if request.method == 'POST':
+        # Criar notificação
+        serializer = NotificationCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(recipient=user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # GET - Listar notificações
     notifications = Notification.objects.filter(recipient=user)
     
     is_read_param = request.query_params.get('is_read')
