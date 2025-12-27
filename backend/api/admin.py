@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Group, GroupMembership, GroupInvite, JoinRequest
+from .models import User, Group, GroupMembership, GroupInvite, JoinRequest, Document
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -49,3 +49,10 @@ class JoinRequestAdmin(admin.ModelAdmin):
     list_display = ('id', 'group', 'user', 'status', 'created_at', 'decided_by')
     search_fields = ('group__name', 'user__email', 'decided_by__email')
     list_filter = ('status', 'created_at')
+
+
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'filename', 'user', 'group', 'state', 'created_at')
+    search_fields = ('filename', 'user__email', 'group__name')
+    list_filter = ('state', 'group', 'created_at')

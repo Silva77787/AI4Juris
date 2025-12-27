@@ -143,14 +143,37 @@
 
 .groups-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(340px, 1.4fr);
+  grid-template-columns: minmax(260px, 1fr) minmax(340px, 1.6fr);
+  grid-template-areas: "list detail";
   gap: 16px;
+  align-items: stretch;
 }
 
 .groups-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.groups-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.groups-list-card {
+  grid-area: list;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  height: 700px;
+}
+
+.groups-detail-card {
+  grid-area: detail;
+  min-height: 0;
 }
 
 .group-card {
@@ -238,14 +261,56 @@
   gap: 14px;
 }
 
+.group-detail-header {
+  align-items: center;
+}
+
+.detail-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.details-icon-btn {
+  border: 1px solid var(--border);
+  background: rgba(12, 23, 48, 0.9);
+  color: var(--text);
+  font-weight: 700;
+  padding: 2px 10px 6px;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.details-icon-btn:hover {
+  border-color: rgba(130, 207, 255, 0.45);
+}
+
 .group-summary {
-  display: grid;
-  grid-template-columns: minmax(140px, 0.9fr) minmax(260px, 1.6fr);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
   padding: 12px;
   border-radius: 14px;
   border: 1px solid var(--border);
   background: rgba(10, 20, 40, 0.85);
+}
+
+.group-meta-left,
+.group-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.group-meta-right {
+  margin-left: auto;
+}
+
+.meta-label {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .summary-label {
@@ -282,10 +347,110 @@
   background: rgba(8, 18, 36, 0.6);
 }
 
+
+.group-documents {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(8, 18, 36, 0.6);
+}
+
+.group-doc-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.group-doc-filters .search-field {
+  min-width: 220px;
+}
+
+.filter-select {
+  border: 1px solid var(--border);
+  background: rgba(12, 23, 48, 0.85);
+  color: #dfe8ff;
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 160px;
+}
+
+.filter-select:hover {
+  border-color: rgba(130, 207, 255, 0.45);
+  background: rgba(18, 38, 72, 0.9);
+}
+
+
+.group-doc-upload {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.group-doc-upload .form-field {
+  margin-bottom: 0;
+}
+
+.group-doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.group-doc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(12, 23, 48, 0.8);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+}
+
+.group-doc-row:hover {
+  border-color: rgba(130, 207, 255, 0.45);
+}
+
+.group-doc-name {
+  margin: 0 0 6px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.group-upload-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.group-doc-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+
 .members-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.members-scroll {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .member-row {
@@ -339,6 +504,15 @@
 
 .ghost-btn.danger:hover {
   border-color: rgba(248, 113, 113, 0.8);
+}
+
+.ghost-btn.success {
+  border-color: rgba(52, 211, 153, 0.55);
+  color: #86efac;
+}
+
+.ghost-btn.success:hover {
+  border-color: rgba(52, 211, 153, 0.85);
 }
 
 .ghost-btn.icon-btn {
@@ -439,6 +613,14 @@
   gap: 10px;
 }
 
+.group-actions-modal {
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .danger-btn {
   border: none;
   background: linear-gradient(135deg, #f87171, #ef4444);
@@ -458,6 +640,9 @@
 @media (max-width: 900px) {
   .groups-grid {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "detail"
+      "list";
   }
 
   .hero-actions {

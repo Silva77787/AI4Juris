@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import TopBar from '../components/TopBar.jsx';
-import DynamicToast from './DynamicToast.jsx';
+import DynamicToast from '../components/DynamicToast.jsx';
 import '../styles/HomePage.css';
 import '../styles/ProfilePage.css';
 import { config } from '../utils/config';
