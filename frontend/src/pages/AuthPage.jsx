@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import LoginPage from "./LoginPage.jsx";
 import RegisterPage from "./RegisterPage.jsx";
-import DynamicToast from "./DynamicToast.jsx";
+import DynamicToast from "../components/DynamicToast.jsx";
 
 function AuthPage() {
   const [type, setType] = useState("signIn");

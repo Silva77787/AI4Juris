@@ -21,6 +21,8 @@ urlpatterns = [
     path('groups/create/', views.create_group, name='create_group'),
     path('groups/my/', views.my_groups, name='my_groups'),
     path('groups/<int:group_id>/members/', views.group_members, name='group_members'),
+    path('groups/<int:group_id>/documents/', views.list_group_documents, name='list_group_documents'),
+    path('groups/<int:group_id>/documents/upload/', views.upload_group_document, name='upload_group_document'),
 
     # Convites por email (utilizador decide)
     path('groups/<int:group_id>/invite/', views.invite_member, name='invite_member'),

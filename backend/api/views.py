@@ -163,52 +163,58 @@ def profile(request):
     }, status=status.HTTP_200_OK)
 
 
-# --- DOCUMENTOS / HISTÓRICO ---
+# --- DOCUMENTOS / HISTORICO ---
+
+def _serialize_document_summary(document):
+    return {
+        "id": document.id,
+        "title": document.filename,
+        "filename": document.filename,
+        "created_at": document.created_at,
+        "state": document.state,
+        "n_descriptors": document.n_descriptors,
+        "error_msg": document.error_msg,
+        "uploaded_by": document.user.email,
+        "group_id": document.group_id,
+    }
+
+
+def _is_group_member(user, group):
+    return GroupMembership.objects.filter(group=group, user=user).exists()
+
+
+def _can_access_document(user, document):
+    if document.group_id:
+        return _is_group_member(user, document.group)
+    return document.user_id == user.id
+
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def list_documents(request):
-    """
-    Lista de documentos para a tua Home / Histórico.
-    Neste momento dados estáticos só para testar o frontend.
-    """
-    documents = [
-        {
-            "id": 1,
-            "title": "Acórdão 1",
-            "filename": "acordao_1.pdf",
-            "uploaded_at": "2025-11-10T12:00:00Z",
-            "status": "processed",
-            "labels": ["Direito Penal", "Recurso"],
-        },
-        {
-            "id": 2,
-            "title": "Acórdão 2",
-            "filename": "acordao_2.pdf",
-            "uploaded_at": "2025-11-11T09:30:00Z",
-            "status": "processing",
-            "labels": [],
-        },
-    ]
-    return Response(documents)
+    documents = (
+        Document.objects.filter(user=request.user, group__isnull=True)
+        .order_by('-created_at')
+    )
+    return Response([_serialize_document_summary(doc) for doc in documents])
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def upload_document(request):
-    """
-    Endpoint de upload simplificado.
-    Por agora assume que recebes JSON (title, description, etc.)
-    Mais tarde mudamos para multipart com ficheiro real.
-    """
-    data = request.data
-    created = {
-        "id": 3,
-        "title": data.get("title", "Documento sem título"),
-        "filename": data.get("filename", "ficheiro.pdf"),
-        "uploaded_at": "2025-11-15T10:00:00Z",
-        "status": "processing",
-        "labels": [],
-    }
-    return Response(created, status=status.HTTP_201_CREATED)
+    uploaded_file = request.FILES.get("file")
+    if not uploaded_file:
+        return Response({"error": "Ficheiro em falta."}, status=status.HTTP_400_BAD_REQUEST)
+
+    filename = request.data.get("filename") or uploaded_file.name
+    document = Document.objects.create(
+        user=request.user,
+        file=uploaded_file,
+        filename=filename,
+        state="QUEUED",
+    )
+    return Response(_serialize_document_summary(document), status=status.HTTP_201_CREATED)
+
 
 # --- DETALHES ---
 
@@ -228,76 +234,11 @@ def upload_document(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def document_detail(request, pk):
-
-    data = [
-        {
-            "id": 1,
-            "filename": "acordao_1.pdf",
-            "state": "DONE",
-            "text": "Texto extraído do Acórdão 1…",
-            "duration_ms": 1800,
-            "n_descriptors": 2,
-            "error_msg": "",
-            "created_at": "2025-11-10T12:00:00Z",
-            "updated_at": "2025-11-10T12:05:00Z",
-            "predictions": [
-                {
-                    "id": 1,
-                    "descriptor": "Direito Penal",
-                    "score": 0.93,
-                    "explanations": [
-                        {
-                            "id": 1,
-                            "text_span": "O arguido foi condenado…",
-                            "start_offset": 210,
-                            "end_offset": 260,
-                            "score": 0.89
-                        }
-                    ]
-                },
-                {
-                    "id": 2,
-                    "descriptor": "Recurso",
-                    "score": 0.88,
-                    "explanations": [
-                        {
-                            "id": 2,
-                            "text_span": "Foi interposto recurso…",
-                            "start_offset": 400,
-                            "end_offset": 440,
-                            "score": 0.90
-                        }
-                    ]
-                }
-            ],
-            "metrics": [
-                { "id": 1, "stage": "OCR", "duration_ms": 500, "created_at": "2025-11-10T12:01:00Z" },
-                { "id": 2, "stage": "LLM Processing", "duration_ms": 1100, "created_at": "2025-11-10T12:03:00Z" },
-                { "id": 3, "stage": "Post-processing", "duration_ms": 200, "created_at": "2025-11-10T12:04:00Z" }
-            ]
-        },
-        {
-            "id": 2,
-            "filename": "acordao_2.pdf",
-            "state": "PROCESSING",
-            "text": "",
-            "duration_ms": "",
-            "n_descriptors": 0,
-            "error_msg": "",
-            "created_at": "2025-11-11T09:30:00Z",
-            "updated_at": "2025-11-11T09:30:00Z",
-            "predictions": [],
-            "metrics": []
-        }
-    ]
-
-    # Procurar o documento com o id solicitado
-    document = next((item for item in data if item["id"] == int(pk)), None)
-
-    if not document:
-        return Response({"detail": "Documento não encontrado."}, status=404)
-
-    return Response(document)
+    document = get_object_or_404(Document, pk=pk)
+    if not _can_access_document(request.user, document):
+        return Response({"detail": "Documento nao encontrado."}, status=404)
+    serializer = DocumentDetailSerializer(document)
+    return Response(serializer.data)
 
 # --- GRUPOS ---
 
@@ -358,6 +299,39 @@ def group_members(request, group_id):
         {"id": m.user.id, "email": m.user.email, "role": m.role}
         for m in members
     ])
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_group_documents(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    if not _is_group_member(request.user, group):
+        return Response({"error": "Nao pertence a este grupo"}, status=403)
+
+    documents = Document.objects.filter(group=group).order_by('-created_at')
+    return Response([_serialize_document_summary(doc) for doc in documents])
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_group_document(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    if not _is_group_member(request.user, group):
+        return Response({"error": "Nao pertence a este grupo"}, status=403)
+
+    uploaded_file = request.FILES.get("file")
+    if not uploaded_file:
+        return Response({"error": "Ficheiro em falta."}, status=status.HTTP_400_BAD_REQUEST)
+
+    filename = request.data.get("filename") or uploaded_file.name
+    document = Document.objects.create(
+        user=request.user,
+        group=group,
+        file=uploaded_file,
+        filename=filename,
+        state="QUEUED",
+    )
+    return Response(_serialize_document_summary(document), status=status.HTTP_201_CREATED)
 
 
 def _require_owner(user, group):

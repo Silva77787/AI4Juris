@@ -1,4 +1,4 @@
-// src/pages/DynamicToast.jsx
+// src/components/DynamicToast.jsx
 import '../styles/DynamicToast.css';
 
 function DynamicToast({ toasts, onDismiss }) {

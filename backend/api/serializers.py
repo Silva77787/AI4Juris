@@ -19,6 +19,8 @@ class MetricSerializer(serializers.ModelSerializer):
         fields = ["id", "stage", "duration_ms", "created_at"]
 
 class DocumentDetailSerializer(serializers.ModelSerializer):
+    uploaded_by = serializers.EmailField(source="user.email", read_only=True)
+    group_id = serializers.IntegerField(source="group.id", read_only=True, allow_null=True)
     predictions = PredictionSerializer(many=True, read_only=True, source="prediction_set")
     metrics = MetricSerializer(many=True, read_only=True, source="metric_set")
 
@@ -34,6 +36,8 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
             "error_msg",
             "created_at",
             "updated_at",
+            "uploaded_by",
+            "group_id",
             "predictions",
             "metrics",
         ]

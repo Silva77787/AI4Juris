@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/HomePage.css';
 import TopBar from '../components/TopBar.jsx';
-import DynamicToast from './DynamicToast.jsx';
+import DynamicToast from '../components/DynamicToast.jsx';
 import { config } from '../utils/config';
 
 function HomePage() {
@@ -12,7 +12,9 @@ function HomePage() {
   const [authenticated, setAuthenticated] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('desc');
-  const [labelFilter, setLabelFilter] = useState('all');
+  const [stateFilter, setStateFilter] = useState('');
+  const [classificationFilter, setClassificationFilter] = useState('');
+  const [page, setPage] = useState(1);
   const [showUpload, setShowUpload] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -100,6 +102,25 @@ function HomePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showUpload]);
 
+  const classificationOptions = useMemo(() => {
+    const labels = new Set();
+    documents.forEach((doc) => {
+      if (Array.isArray(doc.labels)) {
+        doc.labels.forEach((label) => {
+          if (label) labels.add(label);
+        });
+      }
+    });
+    return Array.from(labels).sort((a, b) => a.localeCompare(b));
+  }, [documents]);
+
+  const stateFilterOptions = [
+    { value: 'done', label: 'Done' },
+    { value: 'error', label: 'Error' },
+    { value: 'processing', label: 'Processing' },
+    { value: 'queued', label: 'In queue' },
+  ];
+
   const filteredDocs = useMemo(() => {
     const bySearch = documents.filter((doc) => {
       if (!searchTerm.trim()) return true;
@@ -110,21 +131,34 @@ function HomePage() {
       );
     });
 
-    const byLabels = bySearch.filter((doc) => {
-      const hasLabels = doc.labels && doc.labels.length;
-      if (labelFilter === 'with') return hasLabels;
-      if (labelFilter === 'none') return !hasLabels;
-      return true;
+    const byState = bySearch.filter((doc) => {
+      if (!stateFilter || stateFilter === 'all') return true;
+      const statusText = (doc.state || doc.status || '').toLowerCase();
+      return statusText === stateFilter;
     });
 
-    const sorted = [...byLabels].sort((a, b) => {
+    const byClassification = byState.filter((doc) => {
+      if (!classificationFilter || classificationFilter === 'all') return true;
+      const hasLabels = doc.labels && doc.labels.length;
+      return hasLabels && doc.labels.includes(classificationFilter);
+    });
+
+    const sorted = [...byClassification].sort((a, b) => {
       const da = a.created_at || a.uploaded_at ? new Date(a.created_at || a.uploaded_at).getTime() : 0;
       const db = b.created_at || b.uploaded_at ? new Date(b.created_at || b.uploaded_at).getTime() : 0;
       return sortOrder === 'asc' ? da - db : db - da;
     });
 
     return sorted;
-  }, [documents, labelFilter, searchTerm, sortOrder]);
+  }, [documents, classificationFilter, searchTerm, sortOrder, stateFilter]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, sortOrder, stateFilter, classificationFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredDocs.length / 6));
+  const clampedPage = Math.min(page, totalPages);
+  const pagedDocs = filteredDocs.slice((clampedPage - 1) * 6, clampedPage * 6);
 
   const handleFileSelect = (file) => {
     if (!file) return;
@@ -243,19 +277,40 @@ function HomePage() {
               type="button"
               onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
             >
-              Date {sortOrder === 'asc' ? '->' : '<-'}
+              Date {sortOrder === 'asc' ? '▲' : '▼'}
             </button>
-            <button
-              className="pill-btn"
-              type="button"
-              onClick={() =>
-                setLabelFilter((prev) => (prev === 'all' ? 'with' : prev === 'with' ? 'none' : 'all'))
-              }
+            <select
+              className="filter-select"
+              value={stateFilter}
+              onChange={(event) => setStateFilter(event.target.value)}
+              aria-label="Filtrar por estado"
             >
-              {labelFilter === 'all' && 'Rotulos'}
-              {labelFilter === 'with' && 'Com rotulos'}
-              {labelFilter === 'none' && 'Sem rotulos'}
-            </button>
+              <option value="" disabled>
+                Estado
+              </option>
+              {stateFilterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+              <option value="all">Todos</option>
+            </select>
+            <select
+              className="filter-select"
+              value={classificationFilter}
+              onChange={(event) => setClassificationFilter(event.target.value)}
+              aria-label="Filtrar por classificacao"
+            >
+              <option value="" disabled>
+                Classificacoes
+              </option>
+              {classificationOptions.map((label) => (
+                <option key={label} value={label}>
+                  {label}
+                </option>
+              ))}
+              <option value="all">Todos</option>
+            </select>
           </div>
         </header>
 
@@ -268,7 +323,7 @@ function HomePage() {
               <p className="empty-body">Carrega um PDF para veres o historico aqui.</p>
             </div>
           ) : (
-            filteredDocs.map((doc) => {
+            pagedDocs.map((doc) => {
               const uploadedAt = doc.created_at || doc.uploaded_at;
               const uploaded = uploadedAt ? new Date(uploadedAt).toLocaleString() : 'Data nao disponivel';
               const labels = doc.labels && doc.labels.length ? doc.labels : doc.classification ? [doc.classification] : [];
@@ -311,6 +366,29 @@ function HomePage() {
             })
           )}
         </section>
+        {filteredDocs.length > 6 && (
+          <div className="home-doc-pagination">
+            <button
+              type="button"
+              className="ghost-btn"
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              disabled={clampedPage === 1}
+            >
+              Anterior
+            </button>
+            <span className="meta-text">
+              Pagina {clampedPage} de {totalPages}
+            </span>
+            <button
+              type="button"
+              className="ghost-btn"
+              onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={clampedPage === totalPages}
+            >
+              Seguinte
+            </button>
+          </div>
+        )}
       </main>
 
       <button
