@@ -5,6 +5,7 @@ import TopBar from '../components/TopBar.jsx';
 import DynamicToast from './DynamicToast.jsx';
 import '../styles/HomePage.css';
 import '../styles/ProfilePage.css';
+import { config } from '../utils/config';
 
 function ProfilePage() {
   const [profile, setProfile] = useState({
@@ -73,7 +74,7 @@ function ProfilePage() {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    fetch('http://localhost:7777/profile/', {
+    fetch(`${config.apiUrl}/profile/`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
@@ -155,7 +156,7 @@ function ProfilePage() {
       return;
     }
 
-    fetch('http://localhost:7777/profile/', {
+    fetch(`${config.apiUrl}/profile/`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

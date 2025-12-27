@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import '../styles/HomePage.css';
 import TopBar from '../components/TopBar.jsx';
 import DynamicToast from './DynamicToast.jsx';
+import { config } from '../utils/config';
 
 function HomePage() {
   const [documents, setDocuments] = useState([]);
@@ -43,7 +44,7 @@ function HomePage() {
 
     setAuthenticated(true);
 
-    fetch('http://localhost:7777/documents/', {
+    fetch(`${config.apiUrl}/documents/`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
@@ -180,7 +181,7 @@ function HomePage() {
       formData.append('file', selectedFile);
       formData.append('filename', selectedFile.name);
 
-      const res = await fetch('http://localhost:7777/documents/upload/', {
+      const res = await fetch(`${config.apiUrl}/documents/upload/`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

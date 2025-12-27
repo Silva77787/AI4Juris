@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
+import { config } from "../utils/config";
 function LoginPage({ showToast }) {
   const navigate = useNavigate();
   const [state, setState] = React.useState({ email: "", password: "" });
@@ -22,7 +22,7 @@ function LoginPage({ showToast }) {
     }
 
     try {
-      const response = await fetch("http://localhost:7777/login/", {
+      const response = await fetch(`${config.apiUrl}/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(state),
