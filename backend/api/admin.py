@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import User, Group, GroupMembership, GroupInvite, JoinRequest, Document
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -21,3 +21,38 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active')}
         ),
     )
+
+
+@admin.register(Group)
+class GroupAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'owner', 'created_at')
+    search_fields = ('name', 'owner__email')
+    list_filter = ('created_at',)
+
+
+@admin.register(GroupMembership)
+class GroupMembershipAdmin(admin.ModelAdmin):
+    list_display = ('id', 'group', 'user', 'role', 'created_at')
+    search_fields = ('group__name', 'user__email')
+    list_filter = ('role', 'created_at')
+
+
+@admin.register(GroupInvite)
+class GroupInviteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'group', 'invited_user', 'invited_by', 'status', 'created_at')
+    search_fields = ('group__name', 'invited_user__email', 'invited_by__email')
+    list_filter = ('status', 'created_at')
+
+
+@admin.register(JoinRequest)
+class JoinRequestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'group', 'user', 'status', 'created_at', 'decided_by')
+    search_fields = ('group__name', 'user__email', 'decided_by__email')
+    list_filter = ('status', 'created_at')
+
+
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'filename', 'user', 'group', 'state', 'created_at')
+    search_fields = ('filename', 'user__email', 'group__name')
+    list_filter = ('state', 'group', 'created_at')

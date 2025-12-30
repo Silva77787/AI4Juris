@@ -73,7 +73,13 @@ function DocumentDetailPage() {
 
       <main className="detail-shell">
         <header className="detail-heading">
-          <h1>{data.filename}</h1>
+          <button type="button" className="back-btn" onClick={() => navigate(-1)} aria-label="Voltar" />
+          <div className="detail-title">
+            <h1>{data.filename}</h1>
+            {data.group_id && data.uploaded_by && (
+              <span className="detail-sub">Enviado por {data.uploaded_by}</span>
+            )}
+          </div>
           <span className={`status-pill status-${status}`}>
             {data.state || data.status || "Pendente"}
           </span>
@@ -82,21 +88,21 @@ function DocumentDetailPage() {
         <section className="detail-section detail-summary">
           <h2>Essencial</h2>
           <div className="summary-grid">
-            <div>
+            <div className="summary-item summary-file">
               <p className="summary-label">Ficheiro</p>
               <p className="summary-value">{data.filename || "—"}</p>
             </div>
-            <div>
+            <div className="summary-item">
               <p className="summary-label">Data de upload</p>
               <p className="summary-value">
                 {uploadedAt ? new Date(uploadedAt).toLocaleString() : "—"}
               </p>
             </div>
-            <div>
+            <div className="summary-item">
               <p className="summary-label">Páginas</p>
               <p className="summary-value">{data.page_count || data.pages || "—"}</p>
             </div>
-            <div>
+            <div className="summary-item">
               <p className="summary-label">Origem</p>
               <p className="summary-value">{data.source || "—"}</p>
             </div>

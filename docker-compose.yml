@@ -16,7 +16,7 @@ services:
     build:
       context: ./backend
     container_name: ai4juris_backend
-    command: python manage.py runserver 0.0.0.0:8000
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
     environment:
       DB_NAME: ai4jurisdb
       DB_USER: admin
@@ -32,6 +32,9 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        VITE_BASE: /
+        VITE_API_URL: http://localhost:7777
     container_name: ai4juris_frontend
     depends_on:
       - web

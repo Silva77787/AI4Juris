@@ -1,59 +1,81 @@
 from django.contrib.auth import get_user_model
-from api.models import Document, Prediction, Explanation, Metric
+from django.core.files.base import ContentFile
+from api.models import Document, Group, GroupMembership
+
+
+def _ensure_document(user, filename, group=None):
+    existing = Document.objects.filter(user=user, filename=filename, group=group).first()
+    if existing:
+        return existing
+
+    document = Document(
+        user=user,
+        group=group,
+        filename=filename,
+        state="DONE",
+    )
+    document.file.save(filename, ContentFile(b"dummy pdf content"), save=True)
+    return document
+
 
 def run():
     User = get_user_model()
 
-    # Criar user
-    user, _ = User.objects.get_or_create(username="demo_user", role="user")
-    user.set_password("123456")
-    user.save()
+    # Create 20 users (a..t) with password 1234.
+    users = []
+    for i in range(20):
+        letter = chr(ord("a") + i)
+        email = f"{letter}@gmail.com"
+        user, _ = User.objects.get_or_create(
+            username=email,
+            defaults={"email": email, "first_name": letter, "role": "user"},
+        )
+        user.email = email
+        user.first_name = letter
+        user.set_password("1234")
+        user.save()
+        users.append(user)
 
-    # Criar documento
-    doc = Document.objects.create(
-        user=user,
-        file="documents/exemplo.pdf",
-        filename="exemplo.pdf",
-        state="DONE",
-        text="Texto extraído do PDF…",
-        duration_ms=1520,
-        n_descriptors=3,
-        error_msg=None,
-    )
+    # Create 5 groups with different owners.
+    owners = users[:5]
+    groups = []
+    for idx, owner in enumerate(owners, start=1):
+        group, _ = Group.objects.get_or_create(name=f"Grupo {idx}", defaults={"owner": owner})
+        if group.owner_id != owner.id:
+            group.owner = owner
+            group.save()
+        groups.append(group)
+        GroupMembership.objects.get_or_create(
+            user=owner,
+            group=group,
+            defaults={"role": "owner"},
+        )
 
-    # Previsões
-    p1 = Prediction.objects.create(
-        document=doc,
-        descriptor="Tipo de contrato",
-        score=0.92
-    )
+    # Assign each user to 2-3 groups.
+    for i, user in enumerate(users):
+        group_ids = {i % 5, (i + 1) % 5}
+        if i % 2 == 0:
+            group_ids.add((i + 2) % 5)
+        for gid in group_ids:
+            group = groups[gid]
+            role = "owner" if group.owner_id == user.id else "member"
+            GroupMembership.objects.get_or_create(
+                user=user,
+                group=group,
+                defaults={"role": role},
+            )
 
-    p2 = Prediction.objects.create(
-        document=doc,
-        descriptor="Partes envolvidas",
-        score=0.88
-    )
+    # Personal uploads: 3-5 per user.
+    for i, user in enumerate(users):
+        count = 3 + (i % 3)
+        for n in range(1, count + 1):
+            filename = f"{user.first_name}_personal_{n}.pdf"
+            _ensure_document(user, filename, group=None)
 
-    # Explicações
-    Explanation.objects.create(
-        prediction=p1,
-        text_span="Contrato de prestação de serviços",
-        start_offset=54,
-        end_offset=89,
-        score=0.87
-    )
+    # Group uploads: at least 1 per user in a group.
+    for i, user in enumerate(users):
+        group = groups[i % 5]
+        filename = f"{user.first_name}_group_{group.id}.pdf"
+        _ensure_document(user, filename, group=group)
 
-    Explanation.objects.create(
-        prediction=p2,
-        text_span="Empresa XPTO e Cliente João",
-        start_offset=120,
-        end_offset=150,
-        score=0.91
-    )
-
-    # Métricas
-    Metric.objects.create(document=doc, stage="OCR", duration_ms=450)
-    Metric.objects.create(document=doc, stage="LLM Processing", duration_ms=980)
-    Metric.objects.create(document=doc, stage="Post-processing", duration_ms=90)
-
-    print("Database seeded successfully! Document ID:", doc.id)
+    print("Database seeded successfully!")

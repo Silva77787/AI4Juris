@@ -2,79 +2,66 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import TopBar from '../components/TopBar.jsx';
+import DynamicToast from '../components/DynamicToast.jsx';
 import '../styles/HomePage.css';
 import '../styles/ProfilePage.css';
-import { config } from "../utils/config";
-const mockStats = {
-  totalUploads: 151,
-  processed: 114,
-  processing: 28,
-};
-
-const mockTrend = [
-  { label: '01/01', value: 8 },
-  { label: '01/02', value: 12 },
-  { label: '01/03', value: 16 },
-  { label: '01/04', value: 19 },
-  { label: '01/05', value: 24 },
-  { label: '01/06', value: 27 },
-  { label: '01/07', value: 31 },
-  { label: '01/08', value: 38 },
-  { label: '01/09', value: 44 },
-  { label: '01/10', value: 52 },
-  { label: '01/11', value: 61 },
-];
-
-const mockDescriptors = [
-  { label: 'Direito Penal', value: 38 },
-  { label: 'Direito Civil', value: 27 },
-  { label: 'Recurso', value: 21 },
-  { label: 'Responsabilidade', value: 14 },
-];
-
-const mockRecentDocs = [
-  { name: 'acordao_1', date: '10/11/2025', labels: 'Penal / Recurso', status: 'Processado' },
-  { name: 'acordao_2', date: '11/11/2025', labels: 'Civil', status: 'Em processamento' },
-  { name: 'acordao_3', date: '14/11/2025', labels: 'Responsabilidade', status: 'Processado' },
-];
+import { config } from '../utils/config';
 
 function ProfilePage() {
   const [profile, setProfile] = useState({
-    name: 'Joao',
-    email: 'joao@email.com',
+    name: '',
+    email: '',
   });
   const [form, setForm] = useState({
-    name: 'Joao',
-    email: 'joao@email.com',
+    name: '',
+    email: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
-  const [saved, setSaved] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [error, setError] = useState('');
+  const [stats, setStats] = useState(null);
+  const [trend, setTrend] = useState([]);
+  const [descriptors, setDescriptors] = useState([]);
+  const [recentDocs, setRecentDocs] = useState([]);
+  const [toasts, setToasts] = useState([]);
+
+  const pushToast = (message, type = 'success') => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setToasts((prev) => [...prev.slice(-4), { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, 5000);
+  };
+
+  const dismissToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
 
   const polylinePoints = useMemo(() => {
-    const maxValue = Math.max(...mockTrend.map((p) => p.value));
-    return mockTrend
+    if (trend.length < 2) return '';
+    const maxValue = Math.max(...trend.map((p) => p.value || 0), 1);
+    return trend
       .map((point, idx) => {
-        const x = (idx / (mockTrend.length - 1)) * 360 + 20;
+        const x = (idx / (trend.length - 1)) * 360 + 20;
         const y = 140 - (point.value / maxValue) * 110 + 20;
         return `${x},${y}`;
       })
       .join(' ');
-  }, []);
+  }, [trend]);
 
-  const descriptorTotal = mockDescriptors.reduce((acc, item) => acc + item.value, 0);
+  const descriptorTotal = descriptors.reduce((acc, item) => acc + item.value, 0);
   const donutStops = useMemo(() => {
+    if (!descriptorTotal) return [];
     let acc = 0;
-    return mockDescriptors.map((item) => {
+    return descriptors.map((item) => {
       const start = acc;
       const size = (item.value / descriptorTotal) * 360;
       acc += size;
       return { start, end: acc, label: item.label };
     });
-  }, [descriptorTotal]);
+  }, [descriptorTotal, descriptors]);
 
   const donutGradient = donutStops
     .map((stop, idx) => {
@@ -149,27 +136,27 @@ function ProfilePage() {
     const wantsPasswordChange = !!(form.newPassword || form.confirmPassword);
 
     if (!nameChanged && !emailChanged && !wantsPasswordChange) {
-      setError('Não fizeste nenhuma alteração.');
+      setError('Nao fizeste nenhuma alteracao.');
       return;
     }
 
     if ((nameChanged || emailChanged || wantsPasswordChange) && !form.currentPassword) {
-      setError('A password atual é obrigatória.');
+      setError('A password atual e obrigatoria.');
       return;
     }
 
     if (wantsPasswordChange && form.newPassword !== form.confirmPassword) {
-      setError('As passwords não coincidem.');
+      setError('As passwords nao coincidem.');
       return;
     }
 
     const token = localStorage.getItem('accessToken');
     if (!token) {
-      setError('Sessão expirada. Faz login novamente.');
+      setError('Sessao expirada. Faz login novamente.');
       return;
     }
 
-    fetch('http://localhost:7777/profile/', {
+    fetch(`${config.apiUrl}/profile/`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -189,7 +176,7 @@ function ProfilePage() {
           setError(data.error || 'Erro ao guardar perfil.');
           return;
         }
-        setSaved(true);
+
         setProfile((prev) => ({
           ...prev,
           name: data.name || prev.name,
@@ -203,6 +190,18 @@ function ProfilePage() {
           newPassword: '',
           confirmPassword: '',
         }));
+
+        if (nameChanged) {
+          pushToast('Nome alterado com sucesso.', 'success');
+        }
+        if (emailChanged) {
+          pushToast('Email alterado com sucesso.', 'success');
+        }
+        if (wantsPasswordChange) {
+          pushToast('Palavra-passe alterada com sucesso.', 'success');
+        }
+
+        setShowEdit(false);
       })
       .catch((err) => {
         console.error('Erro ao guardar perfil:', err);
@@ -217,7 +216,7 @@ function ProfilePage() {
 
       <main className="home-shell profile-shell">
         <header className="profile-hero">
-          <h1>Bem-vindo de volta, {profile.name}</h1>
+          <h1>Bem-vindo de volta, {profile.name || 'utilizador'}</h1>
           <button type="button" className="chip-btn edit-btn" onClick={handleOpenEdit}>
             Editar perfil
           </button>
@@ -225,16 +224,16 @@ function ProfilePage() {
 
         <section className="stats-grid">
           <article className="stat-card">
-            <p className="stat-value">{mockStats.totalUploads}</p>
-            <p className="stat-label">Totais de uploads</p>
+            <p className="stat-value">{stats ? stats.totalUploads : '--'}</p>
+            <p className="stat-label">{stats ? 'Totais de uploads' : 'Sem dados'}</p>
           </article>
           <article className="stat-card">
-            <p className="stat-value">{mockStats.processed}</p>
-            <p className="stat-label">Processados com sucesso</p>
+            <p className="stat-value">{stats ? stats.processed : '--'}</p>
+            <p className="stat-label">{stats ? 'Processados com sucesso' : 'Sem dados'}</p>
           </article>
           <article className="stat-card">
-            <p className="stat-value">{mockStats.processing}</p>
-            <p className="stat-label">Em processamento</p>
+            <p className="stat-value">{stats ? stats.processing : '--'}</p>
+            <p className="stat-label">{stats ? 'Em processamento' : 'Sem dados'}</p>
           </article>
         </section>
 
@@ -249,28 +248,40 @@ function ProfilePage() {
               </div>
             </div>
             <div className="chart-wrap">
-              <svg viewBox="0 0 400 200" role="img" aria-label="Evolucao temporal dos uploads">
-                <polyline points={polylinePoints} />
-              </svg>
-              <div className="chart-axis">
-                {mockTrend.map((point) => (
-                  <span key={point.label}>{point.label}</span>
-                ))}
-              </div>
+              {trend.length > 1 ? (
+                <>
+                  <svg viewBox="0 0 400 200" role="img" aria-label="Evolucao temporal dos uploads">
+                    <polyline points={polylinePoints} />
+                  </svg>
+                  <div className="chart-axis">
+                    {trend.map((point) => (
+                      <span key={point.label}>{point.label}</span>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="chart-empty">Sem dados</div>
+              )}
             </div>
           </article>
 
           <article className="profile-card donut-card">
             <h2>Top descritores</h2>
-            <div className="donut-wrap" style={{ background: `conic-gradient(${donutGradient})` }} />
-            <div className="legend">
-              {mockDescriptors.map((item, idx) => (
-                <div key={item.label} className="legend-row">
-                  <span className={`legend-dot legend-dot-${idx}`} />
-                  <span>{item.label}</span>
+            {descriptors.length ? (
+              <>
+                <div className="donut-wrap" style={{ background: `conic-gradient(${donutGradient})` }} />
+                <div className="legend">
+                  {descriptors.map((item, idx) => (
+                    <div key={item.label} className="legend-row">
+                      <span className={`legend-dot legend-dot-${idx}`} />
+                      <span>{item.label}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            ) : (
+              <div className="chart-empty">Sem dados</div>
+            )}
           </article>
         </section>
 
@@ -286,14 +297,23 @@ function ProfilePage() {
               <span>Rotulos</span>
               <span>Estado</span>
             </div>
-            {mockRecentDocs.map((doc) => (
-              <div key={doc.name} className="table-row">
-                <span>{doc.name}</span>
-                <span>{doc.date}</span>
-                <span>{doc.labels}</span>
-                <span>{doc.status}</span>
+            {recentDocs.length ? (
+              recentDocs.map((doc) => (
+                <div key={doc.name} className="table-row">
+                  <span>{doc.name}</span>
+                  <span>{doc.date}</span>
+                  <span>{doc.labels}</span>
+                  <span>{doc.status}</span>
+                </div>
+              ))
+            ) : (
+              <div className="table-row">
+                <span>Sem dados</span>
+                <span>-</span>
+                <span>-</span>
+                <span>-</span>
               </div>
-            ))}
+            )}
           </div>
         </section>
       </main>
@@ -306,10 +326,9 @@ function ProfilePage() {
                 <h2>Editar perfil</h2>
               </div>
               <button type="button" className="modal-close" onClick={() => setShowEdit(false)} aria-label="Fechar">
-                ×
+                x
               </button>
             </div>
-            {saved && <div className="form-message saved-pill">Guardado</div>}
             {error && <div className="form-message form-error">{error}</div>}
             <form onSubmit={handleSubmit} className="modal-form" autoComplete="off">
               <label>
@@ -369,6 +388,8 @@ function ProfilePage() {
           </div>
         </div>
       )}
+
+      <DynamicToast toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
