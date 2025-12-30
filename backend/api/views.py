@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -28,6 +29,7 @@ def get_tokens_for_user(user):
 
 
 @api_view(['POST'])
+@csrf_exempt
 def register(request):
     data = request.data
     email = data.get("email")
@@ -74,6 +76,7 @@ def register(request):
 
 
 @api_view(['POST'])
+@csrf_exempt
 def login(request):
     data = request.data
     email = data.get("email")
@@ -110,6 +113,7 @@ def login(request):
 
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
+
 def profile(request):
     user = request.user
 

@@ -23,6 +23,7 @@ services:
       DB_PASSWORD: admin123
       DB_HOST: db
       DB_PORT: 5432
+      DEBUG: "TRUE"
     ports:
       - "7777:8000" # porta externa para o backend
     depends_on:
