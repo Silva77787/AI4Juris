@@ -22,6 +22,7 @@ class RetrievalResult:
     source: str
     sessao_date: Optional[str]
     descritores: List[str]
+    decision: Optional[str]
 
 
 @dataclass

@@ -1,2 +1,3 @@
 *.dump
 dgsi-scraper/samples_txt/
+.env

@@ -8,6 +8,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from urllib.parse import urljoin, urlparse, parse_qs, urlencode, urlunparse
+from typing import Any, Iterable, Optional
 
 import requests
 from bs4 import BeautifulSoup
@@ -21,7 +22,7 @@ HEADERS = {
     "User-Agent": "AI4Juris-DGSI-Scraper/1.0"
 }
 
-DB_DSN = os.getenv("DGSISCRAPER_DB_DSN")  # e.g. postgresql://dgsi:dgsi@localhost:5433/dgsi
+DB_DSN = os.getenv("DGSISCRAPER_DB_DSN") 
 DB_ENABLED = bool(DB_DSN)
 
 
@@ -64,6 +65,56 @@ def db_ensure_schema(conn) -> None:
             "CREATE INDEX IF NOT EXISTS dgsi_documents_descritores_gin_idx ON dgsi_documents USING GIN (descritores);"
         )
     conn.commit()
+
+def search_documents(
+    conn,
+    query: Optional[str] = None,
+    source: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    order: str = "fetched_at",
+):
+    """
+    Search documents in dgsi_documents.
+
+    - query: searches in text_plain, processo, relator
+    - source: filters by source (e.g. 'dgsi_stj')
+    """
+    if order not in {"fetched_at", "id", "sessao_date"}:
+        raise ValueError("order must be one of: fetched_at, id, sessao_date")
+
+    where_clauses = []
+    params: list[Any] = []
+
+    if query:
+        where_clauses.append(
+            "(text_plain ILIKE %s OR processo ILIKE %s OR relator ILIKE %s)"
+        )
+        q = f"%{query}%"
+        params.extend([q, q, q])
+
+    if source:
+        where_clauses.append("source = %s")
+        params.append(source)
+
+    where_sql = ""
+    if where_clauses:
+        where_sql = "WHERE " + " AND ".join(where_clauses)
+
+    sql = f"""
+        SELECT
+            text_plain
+        FROM dgsi_documents
+        {where_sql}
+        ORDER BY {order} DESC
+        LIMIT %s OFFSET %s;
+    """
+
+    params.extend([limit, offset])
+
+    with conn.cursor() as cur:
+        cur.execute(sql, tuple(params))
+        return cur.fetchall()
 
 def db_count_source(conn, source: str) -> int:
     with conn.cursor() as cur:
