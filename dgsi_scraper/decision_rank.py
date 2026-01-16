@@ -12,11 +12,8 @@ except Exception:
 
 
 DECISION_RE_LIST = [
-    # Decisão: XYZ (mesma linha)
     re.compile(r"(?im)^\s*Decis[aã]o\s*:\s*(.+?)\s*$"),
-    # Decisão: XYZ ... (se ficar colado ao resto do texto)
     re.compile(r"(?is)\bDecis[aã]o\s*:\s*(.{3,200}?)\n"),
-    # Algumas fontes usam "Decisão - ..." ou "Decisão — ..."
     re.compile(r"(?im)^\s*Decis[aã]o\s*[-–—]\s*(.+?)\s*$"),
 ]
 
@@ -27,13 +24,10 @@ TRAILING_PUNCT_RE = re.compile(r"[ \t\r\n]+$")
 def normalize_decision(s: str) -> str:
     s = s.strip()
     s = WHITESPACE_RE.sub(" ", s)
-    # Limpar prefixos redundantes se existirem
     s = re.sub(r"(?i)^\s*decis[aã]o\s*[:\-–—]\s*", "", s).strip()
-    # Remover lixo típico de parsing
-    s = s.replace("\u00a0", " ").strip()  # non-breaking space
+    s = s.replace("\u00a0", " ").strip() 
     s = TRAILING_PUNCT_RE.sub("", s)
     return s
-
 
 def extract_decision_from_text(text_plain: str) -> Optional[str]:
     if not text_plain:
@@ -46,7 +40,6 @@ def extract_decision_from_text(text_plain: str) -> Optional[str]:
             if val:
                 return val
     return None
-
 
 def connect():
     dsn = os.getenv("DGSISCRAPER_DB_DSN")
@@ -130,13 +123,11 @@ def main():
 
             decision = None
 
-            # 1) Prefer what you already stored in JSONB
             if decision_extra:
                 decision = normalize_decision(decision_extra)
                 if decision:
                     stats["decision_from_extra"] += 1
 
-            # 2) Fallback: parse the raw text
             if not decision:
                 decision = extract_decision_from_text(text_plain)
                 if decision:
@@ -151,35 +142,29 @@ def main():
     finally:
         conn.close()
 
-    # Prepare ranking
     ranking = [{"decision": k, "count": v} for k, v in counts.most_common()]
 
-    # Write CSV
     with open(args.csv_out, "w", encoding="utf-8") as f:
         f.write("decision,count\n")
         for row in ranking:
-            # CSV safe quoting minimal
             decision = row["decision"].replace('"', '""')
             f.write(f"\"{decision}\",{row['count']}\n")
 
-    # Write JSON (with stats)
     with open(args.json_out, "w", encoding="utf-8") as f:
         json.dump({"stats": stats, "ranking": ranking}, f, ensure_ascii=False, indent=2)
 
-    # Print summary + top
-    print("=== Decision extraction stats ===")
+    print("\nDecision extraction stats")
     for k, v in stats.items():
         print(f"{k}: {v}")
     print(f"\nUnique decisions: {len(counts)}")
 
     top_n = min(args.show_top, len(ranking))
-    print(f"\n=== Top {top_n} ===")
+    print(f"\nTop {top_n}")
     for i in range(top_n):
         print(f"{i+1:>2}. {ranking[i]['count']:>6}  |  {ranking[i]['decision']}")
 
     print(f"\nSaved CSV:  {args.csv_out}")
     print(f"Saved JSON: {args.json_out}")
-
 
 if __name__ == "__main__":
     main()

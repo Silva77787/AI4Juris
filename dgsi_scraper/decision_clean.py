@@ -95,14 +95,12 @@ def main():
 
     kept.sort(key=lambda x: x["count"], reverse=True)
 
-    # Write CSV
     with open(args.csv_out, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["decision", "count"])
         for r in kept:
             writer.writerow([r["decision"], r["count"]])
 
-    # Split kept decisions into 1-token seeds vs 2+ token variants
     seeds = []
     variants = []
     for r in kept:
@@ -112,21 +110,18 @@ def main():
         else:
             variants.append(r)
 
-    # Write seeds CSV
     with open(args.seeds_out, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["decision", "count"])
         for r in seeds:
             writer.writerow([r["decision"], r["count"]])
 
-    # Write variants CSV
     with open(args.variants_out, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["decision", "count"])
         for r in variants:
             writer.writerow([r["decision"], r["count"]])
 
-    # Write JSON (with stats)
     out = {
         "params": {
             "max_len": args.max_len,

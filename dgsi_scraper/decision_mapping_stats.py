@@ -45,7 +45,6 @@ def main():
         if label == "UNSURE":
             unsure.append(d)
         else:
-            # Best-effort: accommodate slightly different key names in aggregated JSON
             variant = (
                 d.get("decision")
                 or d.get("variant")
@@ -71,29 +70,23 @@ def main():
         ),
     }
 
-    # write stats
     with open(args.stats_out, "w", encoding="utf-8") as f:
         json.dump(stats, f, ensure_ascii=False, indent=2)
 
-    # write unsure only
     with open(args.unsure_out, "w", encoding="utf-8") as f:
         json.dump(unsure, f, ensure_ascii=False, indent=2)
 
-    # optional: write non-UNSURE variants CSV
     if args.canon_csv_out:
         with open(args.canon_csv_out, "w", encoding="utf-8", newline="") as f:
             w = csv.DictWriter(f, fieldnames=["variant", "mapped_to", "count"])
             w.writeheader()
-            # stable, useful ordering: by mapped_to then by descending count then variant
             for row in sorted(
                 non_unsure_rows,
                 key=lambda r: (r["mapped_to"], -int(r.get("count", 1)), r["variant"]),
             ):
                 w.writerow(row)
 
-    # optional: write a DECISION_CANON_MAP snippet (ready to paste)
     if args.canon_map_out:
-        # group variants by canonical label
         by_canon: Dict[str, List[Dict[str, Any]]] = {}
         for row in non_unsure_rows:
             by_canon.setdefault(row["mapped_to"], []).append(row)

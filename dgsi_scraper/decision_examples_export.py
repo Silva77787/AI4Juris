@@ -1,4 +1,3 @@
-# dgsi_scraper/decision_examples_export.py
 import os
 import re
 import json
@@ -11,13 +10,9 @@ except Exception:
     psycopg = None
 
 
-# Same regex logic as decision_rank.py
 DECISION_RE_LIST = [
-    # Decisão: XYZ (mesma linha)
     re.compile(r"(?im)^\s*Decis[aã]o\s*:\s*(.+?)\s*$"),
-    # Decisão: XYZ ... (se ficar colado ao resto do texto)
     re.compile(r"(?is)\bDecis[aã]o\s*:\s*(.{3,200}?)\n"),
-    # Algumas fontes usam "Decisão - ..." ou "Decisão — ..."
     re.compile(r"(?im)^\s*Decis[aã]o\s*[-–—]\s*(.+?)\s*$"),
 ]
 
@@ -28,10 +23,8 @@ TRAILING_PUNCT_RE = re.compile(r"[ \t\r\n]+$")
 def normalize_decision(s: str) -> str:
     s = s.strip()
     s = WHITESPACE_RE.sub(" ", s)
-    # Limpar prefixos redundantes se existirem
     s = re.sub(r"(?i)^\s*decis[aã]o\s*[:\-–—]\s*", "", s).strip()
-    # Remover lixo típico de parsing
-    s = s.replace("\u00a0", " ").strip()  # non-breaking space
+    s = s.replace("\u00a0", " ").strip() 
     s = TRAILING_PUNCT_RE.sub("", s)
     return s
 
@@ -152,7 +145,6 @@ def main():
 
 
     try:
-        # Continue until all classes have enough examples or we run out of docs
         remaining = set(class_tokens)
 
         for (doc_id, source_val, decision_extra, text_plain) in iter_docs(conn, args.batch_size, sources=sources):
@@ -166,7 +158,6 @@ def main():
             decision = None
             decision_src = None
 
-            # 1) Prefer stored JSONB decision
             if decision_extra:
                 d = normalize_decision(decision_extra)
                 if d:
@@ -174,7 +165,6 @@ def main():
                     decision_src = "extra"
                     stats["decision_from_extra"] += 1
 
-            # 2) Fallback: parse from raw text
             if not decision:
                 d = extract_decision_from_text(text_plain or "")
                 if d:
@@ -186,21 +176,16 @@ def main():
                 stats["missing_decision"] += 1
                 continue
 
-            # Match ONLY if the extracted decision is EXACTLY one of the canonical class tokens.
-            # This avoids mixed/partial decisions like "IMPROCEDENTE; CONFIRMADA A SENTENÇA".
             dec_up = normalize_decision(decision).upper()
 
-            # Enforce "single-token" decisions (no spaces) to match the user's requirement.
             if not dec_up or " " in dec_up:
                 continue
 
-            # Exact match against remaining canonical classes
             if dec_up not in remaining:
                 continue
 
             matched_class = dec_up
 
-            # Store example
             if not args.full_text and text_plain:
                 stored_text = text_plain[: args.max_chars]
             else:
@@ -223,7 +208,6 @@ def main():
             if len(examples[matched_class]) >= args.per_class:
                 remaining.discard(matched_class)
 
-        # Final missing classes
         for c in class_tokens:
             if len(examples[c]) == 0:
                 stats["missing_by_class"].append(c)
@@ -239,13 +223,13 @@ def main():
     with open(args.json_out, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
 
-    print("=== Export stats ===")
+    print("\nExport stats")
     for k, v in stats.items():
         if k in ("classes", "found_by_class", "missing_by_class"):
             continue
         print(f"{k}: {v}")
 
-    print("\n=== Examples collected per class ===")
+    print("\nExamples collected per class")
     for c in class_tokens:
         print(f"{c}: {len(examples[c])}")
 
