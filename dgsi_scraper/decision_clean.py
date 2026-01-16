@@ -7,7 +7,6 @@ from typing import Dict, List
 DATE_RE = re.compile(r"^\d{2}/\d{2}/\d{4}$")
 ONLY_SYMBOLS_RE = re.compile(r"^[\W_]+$")
 
-
 def uppercase_ratio(s: str) -> float:
     letters = [c for c in s if c.isalpha()]
     if not letters:
@@ -50,6 +49,8 @@ def main():
     ap.add_argument("--json-out", default="decision_classes_clean.json")
     ap.add_argument("--max-len", type=int, default=120)
     ap.add_argument("--min-upper-ratio", type=float, default=0.8)
+    ap.add_argument("--seeds-out", default="decision_seeds.csv", help="Output CSV with 1-token decisions (seed classes)")
+    ap.add_argument("--variants-out", default="decision_variants.csv", help="Output CSV with 2+ token decisions (variant classes)")
     args = ap.parse_args()
 
     kept: List[Dict] = []
@@ -101,6 +102,30 @@ def main():
         for r in kept:
             writer.writerow([r["decision"], r["count"]])
 
+    # Split kept decisions into 1-token seeds vs 2+ token variants
+    seeds = []
+    variants = []
+    for r in kept:
+        token_count = len(r["decision"].split())
+        if token_count == 1:
+            seeds.append(r)
+        else:
+            variants.append(r)
+
+    # Write seeds CSV
+    with open(args.seeds_out, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["decision", "count"])
+        for r in seeds:
+            writer.writerow([r["decision"], r["count"]])
+
+    # Write variants CSV
+    with open(args.variants_out, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["decision", "count"])
+        for r in variants:
+            writer.writerow([r["decision"], r["count"]])
+
     # Write JSON (with stats)
     out = {
         "params": {
@@ -108,6 +133,8 @@ def main():
             "min_upper_ratio": args.min_upper_ratio,
         },
         "kept_classes": len(kept),
+        "seed_classes": len(seeds),
+        "variant_classes": len(variants),
         "removed_counts": removed,
         "classes": kept,
     }
@@ -117,12 +144,16 @@ def main():
 
     print("Decision cleaning summary\n")
     print(f"Kept classes: {len(kept)}")
+    print(f"Seed classes (1 token): {len(seeds)}")
+    print(f"Variant classes (2+ tokens): {len(variants)}")
     print("Removed (weighted by frequency):")
     for k, v in removed.items():
         print(f"  {k}: {v}")
 
     print(f"\nSaved CSV:  {args.csv_out}")
     print(f"Saved JSON: {args.json_out}")
+    print(f"Saved SEEDS CSV:  {args.seeds_out}")
+    print(f"Saved VARIANTS CSV: {args.variants_out}")
 
 
 if __name__ == "__main__":

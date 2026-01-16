@@ -6,5 +6,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "agno>=2.3.21",
+    "ollama>=0.6.1",
     "psycopg[binary]>=3.3.2",
 ]
