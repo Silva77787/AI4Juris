@@ -2,7 +2,7 @@ import os
 from typing import List, Tuple, Optional
 from dataclasses import dataclass
 import argparse
-
+from dotenv import load_dotenv
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
@@ -36,6 +36,7 @@ class ChunkRetrievalResult:
     processo: Optional[str]
     source: str
     sessao_date: Optional[str]
+    decision: Optional[str]
 
 
 class DocumentRetriever:
@@ -418,6 +419,7 @@ class DocumentRetriever:
 
 
 def main():
+    load_dotenv()
     parser = argparse.ArgumentParser(description="AI4Juris Document Retriever")
     parser.add_argument("--db-dsn", type=str, 
                        default=os.getenv("DGSISCRAPER_DB_DSN"),

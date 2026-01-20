@@ -15,16 +15,16 @@ def tool_retriever(file):
     
     :param file: file given by user.
     '''
-    retrieved = retriever.retrieve(file)
+    retrieved = retriever.retrieve_chunks(file)
 
     con = db_connect()
 
     for i in range(len(retrieved)):
-        decision = get_decision(con, document_id=retrieved[i].id)
+        decision = get_decision(con, document_id=retrieved[i].doc_id)
         if not decision:
             full_text = search_documents(retrieved[i].url)
             text_split = split(full_text)
-            insert_decision(con, document_id=retrieved[i].id, chunk_text=text_split)
+            insert_decision(con, document_id=retrieved[i].doc_id, chunk_text=text_split)
         retrieved[i].decision = decision
     con.close()
     return retrieved

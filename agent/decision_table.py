@@ -5,10 +5,17 @@ import hashlib
 from datetime import datetime, timezone
 import psycopg
 from typing import Any, Iterable, Optional
+from dotenv import load_dotenv
+from dataclasses import dataclass
+
+load_dotenv()
 
 DB_DSN = os.getenv("DGSISCRAPER_DB_DSN")
 DB_ENABLED = bool(DB_DSN)
 
+
+
+@dataclass
 class DecisionRow:
     id: int
     document_id: int
@@ -16,6 +23,7 @@ class DecisionRow:
     decision_sha256: str
     decision_text: str
     created_at: str
+
 
 def db_connect():
     if not DB_ENABLED:
@@ -146,3 +154,17 @@ def get_decision(
                 )
             )
     return out
+
+def delete_all_decisions(conn) -> None:
+    """
+    Deletes ALL rows from dgsi_document_decision.
+    This operation is irreversible.
+    """
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM dgsi_document_decision;")
+    conn.commit()
+
+
+if __name__ == "__main__":
+    con = db_connect()
+    ensure_decision_table(con)
