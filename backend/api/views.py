@@ -210,14 +210,23 @@ def upload_document(request):
     if not uploaded_file:
         return Response({"error": "Ficheiro em falta."}, status=status.HTTP_400_BAD_REQUEST)
 
-    filename = request.data.get("filename") or uploaded_file.name
     document = Document.objects.create(
         user=request.user,
         file=uploaded_file,
-        filename=filename,
+        filename=uploaded_file.name,
         state="QUEUED",
     )
-    return Response(_serialize_document_summary(document), status=status.HTTP_201_CREATED)
+
+    print("Storage class:", document.file.storage.__class__)
+    print("File name:", document.file.name)
+    print("File URL:", document.file.url)
+
+    return Response({
+        "id": document.id,
+        "url": document.file.url,
+        "filename": document.filename,
+        "state": document.state,
+    })
 
 
 # --- DETALHES ---

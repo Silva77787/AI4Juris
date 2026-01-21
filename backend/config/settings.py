@@ -27,13 +27,11 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+AWS_ACCESS_KEY_ID = os.environ.get("B2_KEY_ID") or "003704170a20ebd0000000001"
+AWS_SECRET_ACCESS_KEY = os.environ.get("B2_APPLICATION_KEY") or "K00339UMxStLm7GHO3Asc/GfNDnY65s"
 
-AWS_ACCESS_KEY_ID = os.environ.get("B2_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("B2_APPLICATION_KEY")
-
-AWS_STORAGE_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME")
-AWS_S3_ENDPOINT_URL = os.environ.get("B2_ENDPOINT_URL")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME") or "ai4juris"
+AWS_S3_ENDPOINT_URL = os.environ.get("B2_ENDPOINT_URL") or "https://s3.eu-central-003.backblazeb2.com"
 
 AWS_DEFAULT_ACL = None
 AWS_QUERYSTRING_AUTH = True
@@ -155,7 +153,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 STORAGES = {
     'default': {
-        "storages.backends.s3boto3.S3Boto3Storage"
+       "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
     },
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
