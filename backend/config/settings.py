@@ -27,7 +27,18 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
+AWS_ACCESS_KEY_ID = os.environ["B2_KEY_ID"]
+AWS_SECRET_ACCESS_KEY = os.environ["B2_APPLICATION_KEY"]
+
+AWS_STORAGE_BUCKET_NAME = os.environ["B2_BUCKET_NAME"]
+AWS_S3_ENDPOINT_URL = os.environ["B2_ENDPOINT_URL"]
+
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
+AWS_S3_FILE_OVERWRITE = False
+AWS_S3_ADDRESSING_STYLE = "virtual"
 
 # Application definition
 
@@ -39,13 +50,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # terceiros
+    'storages',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-
-    # tuas apps
     'api'
 ]
 
