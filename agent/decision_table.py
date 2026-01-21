@@ -55,10 +55,18 @@ def ensure_decision_table(conn) -> None:
               decision_index INT NOT NULL,
               decision_sha256 TEXT NOT NULL,
               decision_text TEXT NOT NULL,
+              final_decision TEXT NOT NULL,
               decision_gzip BYTEA,
               created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
               UNIQUE (document_id, decision_index)
             );
+            """
+        )
+        # Add final_decision column if it doesn't exist
+        cur.execute(
+            """
+            ALTER TABLE dgsi_document_decision
+            ADD COLUMN IF NOT EXISTS final_decision TEXT;
             """
         )
         cur.execute(
@@ -77,6 +85,7 @@ def insert_decision(
     document_id: int,
     decision_text: str,
     decision_index: int = 0,
+    final_decision: str = "",
     store_gzip: bool = True,
 ) -> int:
     """
@@ -91,16 +100,17 @@ def insert_decision(
         cur.execute(
             """
             INSERT INTO dgsi_document_decision (
-              document_id, decision_index, decision_sha256, decision_text, decision_gzip, created_at
-            ) VALUES (%s, %s, %s, %s, %s, %s)
+              document_id, decision_index, decision_sha256, decision_text, final_decision, decision_gzip, created_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (document_id, decision_index) DO UPDATE SET
               decision_sha256 = EXCLUDED.decision_sha256,
               decision_text = EXCLUDED.decision_text,
+              final_decision = EXCLUDED.final_decision,
               decision_gzip = EXCLUDED.decision_gzip,
               created_at = EXCLUDED.created_at
             RETURNING id;
             """,
-            (document_id, decision_index, decision_hash, decision_text, decision_gz, created_at),
+            (document_id, decision_index, decision_hash, decision_text, final_decision, decision_gz, created_at),
         )
         row_id = int(cur.fetchone()[0])
     conn.commit()
