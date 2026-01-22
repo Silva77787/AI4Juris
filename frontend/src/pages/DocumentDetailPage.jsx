@@ -80,15 +80,31 @@ function DocumentDetailPage() {
               <span className="detail-sub">Enviado por {data.uploaded_by}</span>
             )}
           </div>
-          <span className={`status-pill status-${status}`}>
-            {data.state || data.status || "Pendente"}
-          </span>
+          <div className="detail-heading-actions">
+            {data.file_url && (
+              <a className="detail-open-link" href={data.file_url} target="_blank" rel="noreferrer">
+                Abrir PDF
+              </a>
+            )}
+            <span className={`status-pill status-${status}`}>
+              {data.state || data.status || "Pendente"}
+            </span>
+          </div>
         </header>
+
+        {data.file_url && (
+          <section className="detail-section">
+            <h2>Previsualizacao do documento</h2>
+            <div className="detail-pdf-preview">
+              <iframe title="Preview PDF" src={data.file_url} />
+            </div>
+          </section>
+        )}
 
         <section className="detail-section detail-summary">
           <h2>Essencial</h2>
           <div className="summary-grid">
-            <div className="summary-item summary-file">
+            <div className="summary-item">
               <p className="summary-label">Ficheiro</p>
               <p className="summary-value">{data.filename || "—"}</p>
             </div>
@@ -101,10 +117,6 @@ function DocumentDetailPage() {
             <div className="summary-item">
               <p className="summary-label">Páginas</p>
               <p className="summary-value">{data.page_count || data.pages || "—"}</p>
-            </div>
-            <div className="summary-item">
-              <p className="summary-label">Origem</p>
-              <p className="summary-value">{data.source || "—"}</p>
             </div>
           </div>
         </section>

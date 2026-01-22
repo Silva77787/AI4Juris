@@ -20,10 +20,12 @@ class Document(models.Model):
     group = models.ForeignKey("Group", null=True, blank=True, on_delete=models.CASCADE, related_name="documents")
     file = models.FileField(upload_to="documents/")
     filename = models.CharField(max_length=255)
+    storage_path = models.CharField(max_length=512, blank=True)
 
     state = models.CharField(max_length=20, choices=STATE_CHOICES, default="QUEUED")
     text = models.TextField(null=True, blank=True)
 
+    page_count = models.IntegerField(null=True, blank=True)
     duration_ms = models.IntegerField(null=True, blank=True)
     n_descriptors = models.IntegerField(default=0)
     error_msg = models.TextField(null=True, blank=True)

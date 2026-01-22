@@ -23,14 +23,18 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
     group_id = serializers.IntegerField(source="group.id", read_only=True, allow_null=True)
     predictions = PredictionSerializer(many=True, read_only=True, source="prediction_set")
     metrics = MetricSerializer(many=True, read_only=True, source="metric_set")
+    file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Document
         fields = [
             "id",
             "filename",
+            "file_url",
+            "storage_path",
             "state",
             "text",
+            "page_count",
             "duration_ms",
             "n_descriptors",
             "error_msg",
@@ -41,3 +45,11 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
             "predictions",
             "metrics",
         ]
+
+    def get_file_url(self, obj):
+        if not obj.file:
+            return None
+        try:
+            return obj.file.url
+        except Exception:
+            return None

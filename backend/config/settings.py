@@ -27,11 +27,13 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-AWS_ACCESS_KEY_ID = os.environ.get("B2_KEY_ID") or "003704170a20ebd0000000001"
-AWS_SECRET_ACCESS_KEY = os.environ.get("B2_APPLICATION_KEY") or "K00339UMxStLm7GHO3Asc/GfNDnY65s"
+AWS_ACCESS_KEY_ID = os.environ.get("B2_KEY_ID") or "003166250af27550000000001"
+AWS_SECRET_ACCESS_KEY = os.environ.get("B2_APPLICATION_KEY") or "K003Qra5rY2vZjoAEu//lih+vfGQHqg"
 
-AWS_STORAGE_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME") or "ai4juris"
+AWS_STORAGE_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME") or "ai4juris-v1"
 AWS_S3_ENDPOINT_URL = os.environ.get("B2_ENDPOINT_URL") or "https://s3.eu-central-003.backblazeb2.com"
+AWS_S3_REGION_NAME = os.environ.get("B2_REGION_NAME") or "eu-central-003"
+AWS_S3_SIGNATURE_VERSION = "s3v4"
 
 AWS_DEFAULT_ACL = None
 AWS_QUERYSTRING_AUTH = True

@@ -53,6 +53,6 @@ class JoinRequestAdmin(admin.ModelAdmin):
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'filename', 'user', 'group', 'state', 'created_at')
+    list_display = ('id', 'filename', 'user', 'group', 'state', 'page_count', 'storage_path', 'created_at')
     search_fields = ('filename', 'user__email', 'group__name')
     list_filter = ('state', 'group', 'created_at')
