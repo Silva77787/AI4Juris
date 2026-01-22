@@ -2,3 +2,4 @@
 dgsi_scraper/output/
 .env
 .DS_Store
+*.pyc

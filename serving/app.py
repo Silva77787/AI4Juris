@@ -6,7 +6,7 @@ app = FastAPI()
 
 @app.post("/identify")
 def identify(req):
-    path = Path(req.file_path)
+    path = Path(req)
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
 
