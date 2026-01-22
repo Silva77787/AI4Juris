@@ -9,28 +9,19 @@ from dgsi_scraper.scrape import search_documents
 DB_DSN = os.getenv("DGSISCRAPER_DB_DSN")
 retriever = DocumentRetriever(db_dsn=DB_DSN)
 
-# def tool_retriever(file):
-#     '''
-#     Retrieve chunks relevant to file provided.
+def tool_retriever(text):
+    '''
+    Retrieve chunks relevant to text provided.
+    Chunks have their decision associated to them.
+    Use this function to help identify the text provided.
     
-#     :param file: file given by user.
-#     '''
-#     retrieved = retriever.retrieve_chunks(file)
-
-#     con = db_connect()
-
-#     for i in range(len(retrieved)):
-#         decision = get_decision(con, document_id=retrieved[i].doc_id)
-#         if not decision:
-#             full_text = search_documents(retrieved[i].url)
-#             text_split = split(full_text)
-#             insert_decision(con, document_id=retrieved[i].doc_id, chunk_text=text_split)
-#         retrieved[i].decision = decision
-#     con.close()
-#     return retrieved
-
+    :param file: text given by user.
+    :return: list of chunk retrieval results
+    '''
+    return retriever.retrieve(query=text)
+  
 def tool_class_retriever(file, decision):
 
     retrieved = retriever.retrieve_by_class(decision=decision, query=file)
-
+    
     return retrieved

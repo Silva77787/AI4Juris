@@ -1,3 +1,5 @@
 *.dump
-dgsi-scraper/samples_txt/
+dgsi_scraper/output/
 .env
+.DS_Store
+*.pyc

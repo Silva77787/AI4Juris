@@ -4,9 +4,10 @@ Recolha jurisprudência do portal DGSI (Direção-Geral da Política de Justiça
 
 ## INSTALAÇÃO DO AMBIENTE PYTHON
 
+A partir da raiz do projeto (AI4Juris):
+
 ```bash
-cd dgsi-scraper
-pip install -r requirements.txt
+uv sync
 ```
 
 ## INICIAR POSTGRESQL COM DOCKER
@@ -41,7 +42,7 @@ O schema é criado automaticamente na primeira execução.
 Distribuição equilibrada (~10.000 documentos):
 
 ```bash
-python scrape.py --source-limits "dgsi_stj=1700,dgsi_sta=1700,dgsi_trp=1100,dgsi_trl=1100,dgsi_tc_ate_1998=500,dgsi_tca_sul=650,dgsi_tca_norte=650,dgsi_tre=550,dgsi_trc=550,dgsi_trg=700,dgsi_jpaz=450,dgsi_clausulas_abusivas=250,dgsi_jcon=300"
+uv run python scrape.py --source-limits "dgsi_stj=1700,dgsi_sta=1700,dgsi_trp=1100,dgsi_trl=1100,dgsi_tc_ate_1998=500,dgsi_tca_sul=650,dgsi_tca_norte=650,dgsi_tre=550,dgsi_trc=550,dgsi_trg=700,dgsi_jpaz=450,dgsi_clausulas_abusivas=250,dgsi_jcon=300"
 ```
 
 Características:  
@@ -113,6 +114,33 @@ Para ativar:
 ```bash
 python scrape.py --save-samples-dir samples_txt
 ```
+
+## EXTRAIR E LIMPAR CLASSES DE DECISÃO
+
+### Ranking bruto das decisões
+
+```bash
+export DGSISCRAPER_DB_DSN="postgresql://dgsi:dgsi@localhost:5433/dgsi"
+
+uv run python dgsi_scraper/decision_rank.py \
+  --csv-out dgsi_scraper/output/decision_ranking.csv \
+  --json-out dgsi_scraper/output/decision_ranking.json \
+  --show-top 9999
+```
+
+### Limpeza das classes de decisão
+
+O ranking bruto contém muito ruído (datas, símbolos, frases incompletas, texto em minúsculas, etc.).
+Este passo aplica uma limpeza baseada em heurísticas simples (CAPS, tamanho, etc.).
+
+```bash
+uv run python dgsi_scraper/decision_clean.py \
+  --input dgsi_scraper/output/decision_ranking.csv \
+  --csv-out dgsi_scraper/output/decision_classes_clean.csv \
+  --json-out dgsi_scraper/output/decision_classes_clean.json
+```
+
+Estes ficheiros servem de base para o próximo passo: **normalização/mapeamento semântico das decisões**.
 
 ## NOTAS FINAIS
 
