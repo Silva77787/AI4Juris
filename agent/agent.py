@@ -7,7 +7,7 @@ from agno.db.in_memory import InMemoryDb
 from agno.models.ollama import Ollama
 from agno.models.ollama import Ollama
 
-from .tools import tool_retriever
+from .tools import tool_class_retriever, tool_retriever
 
 load_dotenv()
 
@@ -28,6 +28,6 @@ async def create_agent(type) -> Agent:
         model=Ollama(MODEL),
         db=InMemoryDb(),
         add_history_to_context=True,
-        tools=[tool_retriever],
+        tools=[tool_class_retriever],
         instructions=instruction_text,
     )
