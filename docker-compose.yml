@@ -23,7 +23,12 @@ services:
       DB_PASSWORD: admin123
       DB_HOST: db
       DB_PORT: 5432
-      DEBUG: "TRUE"
+      DEBUG: "True"
+      B2_KEY_ID: "003166250af27550000000001"
+      B2_APPLICATION_KEY: "K003Qra5rY2vZjoAEu//lih+vfGQHqg"
+      B2_BUCKET_NAME: "ai4juris-v1"
+      B2_ENDPOINT_URL: "https://s3.eu-central-003.backblazeb2.com"
+      B2_REGION_NAME: "eu-central-003"
     ports:
       - "7777:8000" # porta externa para o backend
     depends_on:

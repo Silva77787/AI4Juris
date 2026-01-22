@@ -15,6 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Group, GroupInvite, GroupMembership, JoinRequest
 from django.shortcuts import get_object_or_404
+from pypdf import PdfReader
 
 User = get_user_model()
 
@@ -174,6 +175,8 @@ def _serialize_document_summary(document):
         "id": document.id,
         "title": document.filename,
         "filename": document.filename,
+        "storage_path": document.storage_path,
+        "page_count": document.page_count,
         "created_at": document.created_at,
         "state": document.state,
         "n_descriptors": document.n_descriptors,
@@ -181,6 +184,24 @@ def _serialize_document_summary(document):
         "uploaded_by": document.user.email,
         "group_id": document.group_id,
     }
+
+
+def _get_pdf_page_count(uploaded_file):
+    file_obj = getattr(uploaded_file, "file", uploaded_file)
+    try:
+        file_obj.seek(0)
+    except Exception:
+        pass
+    try:
+        reader = PdfReader(file_obj)
+        return len(reader.pages)
+    except Exception:
+        return None
+    finally:
+        try:
+            file_obj.seek(0)
+        except Exception:
+            pass
 
 
 def _is_group_member(user, group):
@@ -210,12 +231,16 @@ def upload_document(request):
     if not uploaded_file:
         return Response({"error": "Ficheiro em falta."}, status=status.HTTP_400_BAD_REQUEST)
 
+    page_count = _get_pdf_page_count(uploaded_file)
     document = Document.objects.create(
         user=request.user,
         file=uploaded_file,
         filename=uploaded_file.name,
+        page_count=page_count,
         state="QUEUED",
     )
+    document.storage_path = document.file.name
+    document.save(update_fields=["storage_path"])
 
     print("Storage class:", document.file.storage.__class__)
     print("File name:", document.file.name)
@@ -337,13 +362,17 @@ def upload_group_document(request, group_id):
         return Response({"error": "Ficheiro em falta."}, status=status.HTTP_400_BAD_REQUEST)
 
     filename = request.data.get("filename") or uploaded_file.name
+    page_count = _get_pdf_page_count(uploaded_file)
     document = Document.objects.create(
         user=request.user,
         group=group,
         file=uploaded_file,
         filename=filename,
+        page_count=page_count,
         state="QUEUED",
     )
+    document.storage_path = document.file.name
+    document.save(update_fields=["storage_path"])
     return Response(_serialize_document_summary(document), status=status.HTTP_201_CREATED)
 
 
