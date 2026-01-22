@@ -21,6 +21,13 @@ def tool_retriever(text):
     return retriever.retrieve(query=text)
   
 def tool_class_retriever(file, decision):
+    '''
+    Retrieve chunks relevant to text provided and filtered by decision.
+    
+    :param file: text given by user.
+    :param decision: decision to filter chunks by.
+    :return: list of chunk retrieval results
+    '''
 
     retrieved = retriever.retrieve_by_class(decision=decision, query=file)
     
