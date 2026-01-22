@@ -13,7 +13,7 @@ load_dotenv()
 
 MODEL = os.getenv("OLLAMA_MODEL")
 
-with open("agent/prompt_decision.md", "r") as f:
+with open("agent/prompt.md", "r") as f:
     instruction_text = f.read()
 
 async def create_agent(type) -> Agent:
