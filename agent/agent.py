@@ -7,16 +7,22 @@ from agno.db.in_memory import InMemoryDb
 from agno.models.ollama import Ollama
 from agno.models.ollama import Ollama
 
-from tools import tool_retriever
+from .tools import tool_retriever
 
 load_dotenv()
 
 MODEL = os.getenv("OLLAMA_MODEL")
 
-with open("./prompt.md", "r") as f:
+with open("agent/prompt_decision.md", "r") as f:
     instruction_text = f.read()
 
-async def run_agent(file_path: str):
+async def create_agent(type) -> Agent:
+    """
+    Creates an instance of a RAG agent
+    
+    :return: Created agent
+    :rtype: Agent
+    """
     agent = Agent(
         name="JuriAssistant",
         model=Ollama(MODEL),
@@ -25,15 +31,3 @@ async def run_agent(file_path: str):
         tools=[tool_retriever],
         instructions=instruction_text,
     )
-
-    path = Path(file_path)
-    if not path.exists():
-        raise FileNotFoundError
-    
-    document_text = path.read_text(encoding="utf-8")
-
-    prompt = f"""Foi-lhe atribuido o seguinte documento para identificação:
-            {document_text}
-            """
-
-    await agent.aprint_response(prompt, stream=True)
