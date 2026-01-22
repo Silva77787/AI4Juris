@@ -1,3 +1,4 @@
+import json
 import os
 from typing import List, Tuple, Optional
 from dataclasses import dataclass
@@ -414,6 +415,73 @@ class DocumentRetriever:
                     doc_stats["avg_chunks_per_doc"] = 0
                 
                 return doc_stats
+        finally:
+            conn.close()
+
+    def retrieve_by_class(
+        self,
+        decision: str,
+        query: str,
+        top_k: int = 5,
+        filter_source: Optional[str] = None,
+        min_similarity: float = 0.0
+        )-> List[ChunkRetrievalResult]:
+        query_embedding = self.generate_embedding(query, use_chunking=False)
+        conn = self.get_connection()
+
+        with open("agent/decision_ids_by_class_ALLSOURCES.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+    
+        doc_ids = []
+        for cls, items in data["ids_by_class"].items():
+            if cls == decision:
+                for item in items:
+                    doc_ids.append({
+                        "deci": cls,
+                        "id": int(item["id"]),
+                        "source": item.get("source"),
+                        "variant": item.get("variant"),
+                    })
+
+        try:
+            with conn.cursor() as cur:
+                # join with document metadata
+                sql = """
+                    SELECT 
+                        c.id, c.doc_id, c.chunk_index, c.chunk_text,
+                        d.url, d.processo, d.source, d.sessao_date,
+                        1 - (c.embedding <=> %s::vector) AS similarity
+                    FROM dgsi_document_chunks c
+                    JOIN dgsi_documents d ON c.doc_id = d.id
+                    WHERE c.embedding IS NOT NULL AND d.id = ANY(%s)
+                """
+                params = [query_embedding.tolist(), [item["id"] for item in doc_ids]]
+                if filter_source:
+                    sql += " AND d.source = %s"
+                    params.append(filter_source)
+                
+                sql += " ORDER BY c.embedding <=> %s::vector LIMIT %s;"
+                params.extend([query_embedding.tolist(), top_k])
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+
+            results = []
+            for row in rows:
+                similarity = float(row[8])
+                if similarity >= min_similarity:
+                    results.append(ChunkRetrievalResult(
+                        chunk_id=row[0],
+                        doc_id=row[1],
+                        chunk_index=row[2],
+                        chunk_text=row[3],
+                        url=row[4],
+                        processo=row[5],
+                        source=row[6],
+                        sessao_date=row[7],
+                        similarity=similarity
+                    ))
+            
+            return results        
         finally:
             conn.close()
 
