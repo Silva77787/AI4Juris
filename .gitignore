@@ -1,3 +1,4 @@
 *.dump
 dgsi_scraper/output/
 .env
+.DS_Store
