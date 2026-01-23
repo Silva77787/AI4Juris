@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -17,6 +17,7 @@ RUN uv sync --system
 
 COPY serving/ ./serving
 COPY agent/ ./agent
+COPY dgsi_scraper/ ./dgsi_scraper
 
 EXPOSE 8000
 
