@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: dgsi_postgres
+    environment:
+      POSTGRES_DB: dgsi
+      POSTGRES_USER: dgsi
+      POSTGRES_PASSWORD: dgsi
+    ports:
+      - "5433:5432"
+    volumes:
+      - dgsi_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dgsi -d dgsi"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: serving/Dockerfile
+    container_name: dgsi_api
+    environment:
+      DGSISCRAPER_DB_DSN: postgresql://dgsi:dgsi@postgres:5432/dgsi
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: gpt-oss:20b
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  dgsi_pgdata:

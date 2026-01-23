@@ -1,0 +1,602 @@
+[
+  {
+    "class": "CONFIRMADA",
+    "id": 20154,
+    "source": "dgsi_trc",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 19712,
+    "source": "dgsi_trl",
+    "variant": "NÃO PROVIDO"
+  },
+  {
+    "class": "NEGADA",
+    "id": 19353,
+    "source": "dgsi_trl",
+    "variant": "REJEIÇÃO"
+  },
+  {
+    "class": "NEGADA",
+    "id": 13758,
+    "source": "dgsi_stj",
+    "variant": "NEGADA A REVISTA"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 20378,
+    "source": "dgsi_trc",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 19817,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "NULIDADE",
+    "id": 20468,
+    "source": "dgsi_trc",
+    "variant": "DECLARADA A NULIDADE DA SENTENÇA"
+  },
+  {
+    "class": "ALTERADA",
+    "id": 17781,
+    "source": "dgsi_trp",
+    "variant": "ALTERADA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14710,
+    "source": "dgsi_stj",
+    "variant": "NEGADA A REVISTA"
+  },
+  {
+    "class": "ANULADA",
+    "id": 17809,
+    "source": "dgsi_trp",
+    "variant": "ANULAÇÃO"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 21145,
+    "source": "dgsi_trg",
+    "variant": "APELAÇÃO PARCIALMENTE PROCEDENTE"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 20321,
+    "source": "dgsi_trc",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 21165,
+    "source": "dgsi_trg",
+    "variant": "APELAÇÃO IMPROCEDENTE"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 20484,
+    "source": "dgsi_trc",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "INUTILIDADE",
+    "id": 19945,
+    "source": "dgsi_trl",
+    "variant": "INUTILIDADE SUPERVENIENTE DA LIDE"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 20446,
+    "source": "dgsi_trc",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "ANULADA",
+    "id": 14100,
+    "source": "dgsi_stj",
+    "variant": "ANULADO O ACÓRDÃO RECORRIDO E ENVIO ÀS INSTÂNCIAS"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14665,
+    "source": "dgsi_stj",
+    "variant": "NEGADO PROVIMENTO"
+  },
+  {
+    "class": "NEGADA",
+    "id": 19988,
+    "source": "dgsi_trc",
+    "variant": "NEGADO PROVIMENTO AO RECURSO"
+  },
+  {
+    "class": "PROVIDO",
+    "id": 19421,
+    "source": "dgsi_trl",
+    "variant": "PROVIDO"
+  },
+  {
+    "class": "NEGADA",
+    "id": 13910,
+    "source": "dgsi_stj",
+    "variant": "INDEFERIDA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 13900,
+    "source": "dgsi_stj",
+    "variant": "NEGADAS"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 19667,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 15111,
+    "source": "dgsi_stj",
+    "variant": "PROCEDÊNCIA PARCIAL"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 21107,
+    "source": "dgsi_trg",
+    "variant": "APELAÇÃO IMPROCEDENTE"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 18864,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14383,
+    "source": "dgsi_stj",
+    "variant": "NEGADA"
+  },
+  {
+    "class": "CONCEDIDA",
+    "id": 14259,
+    "source": "dgsi_stj",
+    "variant": "CONCEDIDA"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 17844,
+    "source": "dgsi_trp",
+    "variant": "REVOGADA"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 20865,
+    "source": "dgsi_trg",
+    "variant": "APELAÇÃO PROCEDENTE"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 19497,
+    "source": "dgsi_trl",
+    "variant": "PROCEDENTE"
+  },
+  {
+    "class": "NEGADA",
+    "id": 13710,
+    "source": "dgsi_stj",
+    "variant": "NEGADO PROVIMENTO"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 20471,
+    "source": "dgsi_trc",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 19327,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "PROVIDO",
+    "id": 14852,
+    "source": "dgsi_stj",
+    "variant": "PROVIDO EM PARTE"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 19837,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 19961,
+    "source": "dgsi_trc",
+    "variant": "REVOGADA"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 18594,
+    "source": "dgsi_trp",
+    "variant": "CONFIRMADA A SENTENÇA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14441,
+    "source": "dgsi_stj",
+    "variant": "NEGADO PROVIMENTO"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14378,
+    "source": "dgsi_stj",
+    "variant": "RECLAMAÇÃO INDEFERIDA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14627,
+    "source": "dgsi_stj",
+    "variant": "INDEFERIDA A RECLAMAÇÃO"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 18183,
+    "source": "dgsi_trp",
+    "variant": "REVOGADA PARCIAL"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 19947,
+    "source": "dgsi_trl",
+    "variant": "PROCEDENTE"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 18852,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 20104,
+    "source": "dgsi_trc",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "CONCEDIDA",
+    "id": 14286,
+    "source": "dgsi_stj",
+    "variant": "CONCEDIDA A REVISTA E DETERMINA-SE A AMPLIAÇÃO DE MATÉRIA DE FACTO"
+  },
+  {
+    "class": "ALTERADA",
+    "id": 21773,
+    "source": "dgsi_tre",
+    "variant": "ALTERADA EM PARTE A DECISÃO RECORRIDA"
+  },
+  {
+    "class": "CONCEDIDA",
+    "id": 14362,
+    "source": "dgsi_stj",
+    "variant": "CONCEDIDA A REVISTA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14851,
+    "source": "dgsi_stj",
+    "variant": "INDEFERIDA"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 20211,
+    "source": "dgsi_trc",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 18291,
+    "source": "dgsi_trp",
+    "variant": "CONFIRMADA A SENTENÇA"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 18465,
+    "source": "dgsi_trp",
+    "variant": "CONFIRMADA A SENTENÇA"
+  },
+  {
+    "class": "DECRETADA",
+    "id": 18972,
+    "source": "dgsi_trl",
+    "variant": "DECRETADA"
+  },
+  {
+    "class": "PROVIDO",
+    "id": 13840,
+    "source": "dgsi_stj",
+    "variant": "PROVIDO"
+  },
+  {
+    "class": "NEGADA",
+    "id": 20089,
+    "source": "dgsi_trc",
+    "variant": "NEGADO PROVIMENTO AO RECURSO"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 19391,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "PROVIDO",
+    "id": 13684,
+    "source": "dgsi_stj",
+    "variant": "PROVIDO"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 20455,
+    "source": "dgsi_trc",
+    "variant": "REVOGADA"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 18264,
+    "source": "dgsi_trp",
+    "variant": "CONFIRMADA A SENTENÇA"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 20663,
+    "source": "dgsi_trg",
+    "variant": "APELAÇÃO IMPROCEDENTE"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 20526,
+    "source": "dgsi_trg",
+    "variant": "APELAÇÃO IMPROCEDENTE"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 17862,
+    "source": "dgsi_trp",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 19139,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 18676,
+    "source": "dgsi_trp",
+    "variant": "REVOGADA"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 20250,
+    "source": "dgsi_trc",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 19046,
+    "source": "dgsi_trl",
+    "variant": "PARCIALMENTE PROCEDENTE"
+  },
+  {
+    "class": "CONCEDIDA",
+    "id": 14625,
+    "source": "dgsi_stj",
+    "variant": "CONCEDIDA PARCIALMENTE A REVISTA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 15066,
+    "source": "dgsi_stj",
+    "variant": "NEGADA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14541,
+    "source": "dgsi_stj",
+    "variant": "INDEFERIDA A RECLAMAÇÃO"
+  },
+  {
+    "class": "RESOLVIDO",
+    "id": 19816,
+    "source": "dgsi_trl",
+    "variant": "DECIDIDO"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 15130,
+    "source": "dgsi_stj",
+    "variant": "REVISTA IMPROCEDENTE"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 21703,
+    "source": "dgsi_tre",
+    "variant": "REVOGADA PARCIALMENTE A DECISÃO RECORRIDA"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 20832,
+    "source": "dgsi_trg",
+    "variant": "APELAÇÃO PARCIALMENTE PROCEDENTE"
+  },
+  {
+    "class": "PROVIDO",
+    "id": 18908,
+    "source": "dgsi_trl",
+    "variant": "PROVIDO"
+  },
+  {
+    "class": "REENVIO",
+    "id": 19847,
+    "source": "dgsi_trl",
+    "variant": "REMESSA AO PRESIDENTE DA RELAÇÃO"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 18101,
+    "source": "dgsi_trp",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 13521,
+    "source": "dgsi_stj",
+    "variant": "INDEFERIDA A RECLAMAÇÃO"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 19011,
+    "source": "dgsi_trl",
+    "variant": "PARCIALMENTE PROCEDENTE"
+  },
+  {
+    "class": "CONCEDIDA",
+    "id": 13651,
+    "source": "dgsi_stj",
+    "variant": "CONCEDIDA PARCIALMENTE A REVISTA"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 18003,
+    "source": "dgsi_trp",
+    "variant": "CONFIRMADA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14431,
+    "source": "dgsi_stj",
+    "variant": "NEGADO PROVIMENTO"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 21254,
+    "source": "dgsi_tre",
+    "variant": "CONFIRMADA A SENTENÇA RECORRIDA"
+  },
+  {
+    "class": "CONCEDIDA",
+    "id": 13819,
+    "source": "dgsi_stj",
+    "variant": "CONCEDIDA A REVISTA"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 20141,
+    "source": "dgsi_trc",
+    "variant": "REVOGADA PARCIALMENTE"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 18332,
+    "source": "dgsi_trp",
+    "variant": "REVOGAÇÃO"
+  },
+  {
+    "class": "PROVIDO",
+    "id": 14510,
+    "source": "dgsi_stj",
+    "variant": "PROVIDO EM PARTE"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 13873,
+    "source": "dgsi_stj",
+    "variant": "REVISTA PROCEDENTE REPRESTINANDO DA DECISÃO DA 1ª INSTÂNCIA"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 17810,
+    "source": "dgsi_trp",
+    "variant": "REVOGAÇÃO"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 18890,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "REVOGADA",
+    "id": 21489,
+    "source": "dgsi_tre",
+    "variant": "REVOGADA A DECISÃO RECORRIDA"
+  },
+  {
+    "class": "NEGADA",
+    "id": 19789,
+    "source": "dgsi_trl",
+    "variant": "NÃO PROVIDO"
+  },
+  {
+    "class": "ANULADA",
+    "id": 13740,
+    "source": "dgsi_stj",
+    "variant": "ANULADO O JULGAMENTO, MANDANDO-SE AMPLIAR A MATÉRIA DE FACTO"
+  },
+  {
+    "class": "NEGADA",
+    "id": 14397,
+    "source": "dgsi_stj",
+    "variant": "NEGADA A REVISTA"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 15025,
+    "source": "dgsi_stj",
+    "variant": "REVISTA IMPROCEDENTE"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 14554,
+    "source": "dgsi_stj",
+    "variant": "REVISTA IMPROCEDENTE"
+  },
+  {
+    "class": "PROCEDENTE",
+    "id": 20793,
+    "source": "dgsi_trg",
+    "variant": "APELAÇÃO PROCEDENTE"
+  },
+  {
+    "class": "NEGADA",
+    "id": 15187,
+    "source": "dgsi_stj",
+    "variant": "NEGADA"
+  },
+  {
+    "class": "IMPROCEDENTE",
+    "id": 19201,
+    "source": "dgsi_trl",
+    "variant": "IMPROCEDENTE"
+  },
+  {
+    "class": "NEGADA",
+    "id": 13586,
+    "source": "dgsi_stj",
+    "variant": "RECLAMAÇÃO INDEFERIDA"
+  },
+  {
+    "class": "CONFIRMADA",
+    "id": 18843,
+    "source": "dgsi_trp",
+    "variant": "CONFIRMAÇÃO"
+  }
+]
