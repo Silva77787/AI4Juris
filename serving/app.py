@@ -4,6 +4,7 @@ from uuid import uuid4
 from pydantic import BaseModel
 
 from agent import agent
+from dgsi_scraper import knn_predict_from_file
 
 app = FastAPI()
 SESSIONS = {}
@@ -14,11 +15,9 @@ class IdentifyReq(BaseModel):
 class CreateChatReq(BaseModel):
     path: str
 
-
 class ChatReq(BaseModel):
     session_id: str
     message: str
-
 
 class CloseReq(BaseModel):
     session_id: str
@@ -30,17 +29,20 @@ async def identify(req: IdentifyReq):
         raise HTTPException(status_code=404, detail="File not found")
     document_text = path.read_text(encoding="utf-8")
 
-    prompt = f"""Foi-lhe atribuido o seguinte documento para identificação:\n
-    {document_text}
+    decision = knn_predict_from_file.predict_label_from_text(text=document_text)
+
+    prompt = f"""Foi-lhe atribuido o seguinte documento e decisão:\n
+    {document_text}\n
+    {decision}
     """
 
     identifier_agent = await agent.create_agent("identifier_agent")
     
     resp = await identifier_agent.arun(prompt)
-    return {"response": resp}
+    return {"decision": decision, "response": resp}
 
 @app.post("/create_chat")
-async def chat(req: CreateChatReq):
+async def create_chat(req: CreateChatReq):
     path = Path(req.path) #file being questioned about
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
