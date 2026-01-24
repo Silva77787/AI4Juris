@@ -24,6 +24,8 @@ class Document(models.Model):
 
     state = models.CharField(max_length=20, choices=STATE_CHOICES, default="QUEUED")
     text = models.TextField(null=True, blank=True)
+    classification = models.CharField(max_length=255, blank=True)
+    justification = models.TextField(null=True, blank=True)
 
     page_count = models.IntegerField(null=True, blank=True)
     duration_ms = models.IntegerField(null=True, blank=True)

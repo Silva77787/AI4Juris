@@ -1,5 +1,5 @@
 // src/pages/HomePage.jsx
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/HomePage.css';
 import TopBar from '../components/TopBar.jsx';
@@ -36,42 +36,65 @@ function HomePage() {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+  const refreshDocuments = useCallback(
+    (options = {}) => {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        navigate('/');
+        return;
+      }
 
-    if (!token) {
-      navigate('/');
-      return;
-    }
+      if (!options.silent) {
+        setLoading(true);
+      }
+      setAuthenticated(true);
 
-    setAuthenticated(true);
-
-    fetch(`${config.apiUrl}/documents/`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) {
-          if (res.status === 401) {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            navigate('/');
+      fetch(`${config.apiUrl}/documents/`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => {
+          if (!res.ok) {
+            if (res.status === 401) {
+              localStorage.removeItem('accessToken');
+              localStorage.removeItem('refreshToken');
+              navigate('/');
+            }
+            throw new Error('Erro ao buscar documentos');
           }
-          throw new Error('Erro ao buscar documentos');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setDocuments(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Erro ao carregar documentos:', err);
-        setLoading(false);
-      });
-  }, [navigate]);
+          return res.json();
+        })
+        .then((data) => {
+          setDocuments(data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error('Erro ao carregar documentos:', err);
+          setLoading(false);
+        });
+    },
+    [navigate]
+  );
+
+  useEffect(() => {
+    refreshDocuments();
+  }, [refreshDocuments]);
+
+  useEffect(() => {
+    const hasPending = documents.some((doc) => {
+      const state = (doc.state || '').toLowerCase();
+      return state === 'queued' || state === 'processing';
+    });
+    if (!hasPending) return;
+
+    const interval = setInterval(() => {
+      refreshDocuments({ silent: true });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [documents, refreshDocuments]);
 
   useEffect(() => {
     const pendingToast = localStorage.getItem('pendingToast');
@@ -327,7 +350,6 @@ function HomePage() {
               const uploadedAt = doc.created_at || doc.uploaded_at;
               const uploaded = uploadedAt ? new Date(uploadedAt).toLocaleString() : 'Data nao disponivel';
               const labels = doc.labels && doc.labels.length ? doc.labels : doc.classification ? [doc.classification] : [];
-              const justification = doc.justification || doc.explanation || 'Sem justificacao disponivel.';
               const statusText = doc.state || doc.status || 'Pendente';
               const statusKey = statusText.toLowerCase().replace(/\s+/g, '-');
 
@@ -358,7 +380,6 @@ function HomePage() {
                           </span>
                         ))}
                       </div>
-                      <p className="doc-just">{justification}</p>
                     </div>
                   </article>
                 </Link>

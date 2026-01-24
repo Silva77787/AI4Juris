@@ -1,21 +1,21 @@
+import os
+
+import requests
 from django.utils import timezone
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Document, Prediction, Explanation, Metric
-from .serializers import DocumentDetailSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Group, GroupInvite, GroupMembership, JoinRequest
 from django.shortcuts import get_object_or_404
 from pypdf import PdfReader
+
+from .models import Document, Group, GroupInvite, GroupMembership, JoinRequest
+from .serializers import DocumentDetailSerializer
+from .tasks import process_document
 
 User = get_user_model()
 
@@ -176,10 +176,14 @@ def _serialize_document_summary(document):
         "title": document.filename,
         "filename": document.filename,
         "storage_path": document.storage_path,
+        "file_url": document.file.url if document.file else None,
         "page_count": document.page_count,
         "created_at": document.created_at,
         "state": document.state,
         "n_descriptors": document.n_descriptors,
+        "classification": document.classification,
+        "justification": document.justification,
+        "labels": [document.classification] if document.classification else [],
         "error_msg": document.error_msg,
         "uploaded_by": document.user.email,
         "group_id": document.group_id,
@@ -204,6 +208,15 @@ def _get_pdf_page_count(uploaded_file):
             pass
 
 
+def _queue_document_processing(document):
+    try:
+        process_document.delay(document.id)
+    except Exception as exc:
+        document.state = "ERROR"
+        document.error_msg = f"Queue error: {exc}"
+        document.save(update_fields=["state", "error_msg", "updated_at"])
+
+
 def _is_group_member(user, group):
     return GroupMembership.objects.filter(group=group, user=user).exists()
 
@@ -212,6 +225,15 @@ def _can_access_document(user, document):
     if document.group_id:
         return _is_group_member(user, document.group)
     return document.user_id == user.id
+
+
+def _ia_post(path, payload):
+    base_url = os.environ.get("IA_API_URL", "http://host.docker.internal:8000").rstrip("/")
+    timeout = float(os.environ.get("IA_API_TIMEOUT_SEC", "60"))
+    url = f"{base_url}/{path.lstrip('/')}"
+    resp = requests.post(url, json=payload, timeout=timeout)
+    resp.raise_for_status()
+    return resp.json()
 
 
 @api_view(['GET'])
@@ -241,17 +263,13 @@ def upload_document(request):
     )
     document.storage_path = document.file.name
     document.save(update_fields=["storage_path"])
+    _queue_document_processing(document)
 
     print("Storage class:", document.file.storage.__class__)
     print("File name:", document.file.name)
     print("File URL:", document.file.url)
 
-    return Response({
-        "id": document.id,
-        "url": document.file.url,
-        "filename": document.filename,
-        "state": document.state,
-    })
+    return Response(_serialize_document_summary(document))
 
 
 # --- DETALHES ---
@@ -277,6 +295,50 @@ def document_detail(request, pk):
         return Response({"detail": "Documento nao encontrado."}, status=404)
     serializer = DocumentDetailSerializer(document)
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def document_chat_create(request, pk):
+    document = get_object_or_404(Document, pk=pk)
+    if not _can_access_document(request.user, document):
+        return Response({"detail": "Documento nao encontrado."}, status=404)
+    if not document.text:
+        return Response({"error": "Documento ainda nao processado."}, status=409)
+
+    data = _ia_post("/create_chat_text", {"text": document.text})
+    return Response({"session_id": data.get("session_id")})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def document_chat_message(request, pk):
+    document = get_object_or_404(Document, pk=pk)
+    if not _can_access_document(request.user, document):
+        return Response({"detail": "Documento nao encontrado."}, status=404)
+
+    session_id = request.data.get("session_id")
+    message = request.data.get("message")
+    if not session_id or not message:
+        return Response({"error": "session_id e message sao obrigatorios."}, status=400)
+
+    data = _ia_post("/chat", {"session_id": session_id, "message": message})
+    return Response(data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def document_chat_close(request, pk):
+    document = get_object_or_404(Document, pk=pk)
+    if not _can_access_document(request.user, document):
+        return Response({"detail": "Documento nao encontrado."}, status=404)
+
+    session_id = request.data.get("session_id")
+    if not session_id:
+        return Response({"error": "session_id e obrigatorio."}, status=400)
+
+    data = _ia_post("/close_chat", {"session_id": session_id})
+    return Response(data)
 
 # --- GRUPOS ---
 
@@ -373,6 +435,8 @@ def upload_group_document(request, group_id):
     )
     document.storage_path = document.file.name
     document.save(update_fields=["storage_path"])
+    _queue_document_processing(document)
+
     return Response(_serialize_document_summary(document), status=status.HTTP_201_CREATED)
 
 

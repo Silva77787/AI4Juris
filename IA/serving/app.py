@@ -12,8 +12,14 @@ SESSIONS = {}
 class IdentifyReq(BaseModel):
     path: str
 
+class IdentifyTextReq(BaseModel):
+    text: str
+
 class CreateChatReq(BaseModel):
     path: str
+
+class CreateChatTextReq(BaseModel):
+    text: str
 
 class ChatReq(BaseModel):
     session_id: str
@@ -41,6 +47,27 @@ async def identify(req: IdentifyReq):
     resp = await identifier_agent.arun(prompt)
     return {"decision": decision, "response": resp}
 
+@app.post("/identify_text")
+async def identify_text(req: IdentifyTextReq):
+    text = req.text or ""
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="Empty text")
+
+    print(f"identify_text received {len(text)} chars")
+    print(text[:2000])
+
+    decision = knn_predict_from_file.predict_label_from_text(text=text)
+
+    prompt = f"""Document text and decision:\n
+    {text}\n
+    {decision}
+    """
+
+    identifier_agent = await agent.create_agent("identifier_agent")
+
+    resp = await identifier_agent.arun(prompt)
+    return {"decision": decision, "response": resp}
+
 @app.post("/create_chat")
 async def create_chat(req: CreateChatReq):
     path = Path(req.path) #file being questioned about
@@ -50,6 +77,19 @@ async def create_chat(req: CreateChatReq):
 
     chat_agent = await agent.create_agent("chat_agent")
     await chat_agent.arun(f"Documento base:\n{document_text}")
+
+    session_id = str(uuid4())
+    SESSIONS[session_id] = chat_agent
+    return {"session_id": session_id}
+
+@app.post("/create_chat_text")
+async def create_chat_text(req: CreateChatTextReq):
+    text = req.text or ""
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="Empty text")
+
+    chat_agent = await agent.create_agent("chat_agent")
+    await chat_agent.arun(f"Documento base:\n{text}")
 
     session_id = str(uuid4())
     SESSIONS[session_id] = chat_agent

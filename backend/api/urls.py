@@ -16,6 +16,9 @@ urlpatterns = [
     path('documents/', views.list_documents, name='list_documents'),
     path('documents/upload/', views.upload_document, name='upload_document'),
     path("documents/<int:pk>/", views.document_detail),
+    path("documents/<int:pk>/chat/create/", views.document_chat_create),
+    path("documents/<int:pk>/chat/message/", views.document_chat_message),
+    path("documents/<int:pk>/chat/close/", views.document_chat_close),
 
     # Grupos (base)
     path('groups/create/', views.create_group, name='create_group'),
