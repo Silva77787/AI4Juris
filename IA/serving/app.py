@@ -37,7 +37,7 @@ async def identify(req: IdentifyReq):
 
     decision = knn_predict_from_file.predict_label_from_text(text=document_text)
 
-    prompt = f"""Foi-lhe atribuido o seguinte documento e decisão:\n
+    prompt = f"""Foi-lhe atribuido o seguinte documento:\ndecisão:\n
     {document_text}\n
     {decision}
     """
@@ -57,10 +57,11 @@ async def identify_text(req: IdentifyTextReq):
     print(text[:2000])
 
     decision = knn_predict_from_file.predict_label_from_text(text=text)
-
-    prompt = f"""Document text and decision:\n
-    {text}\n
+    print(f"Predicted decision: {decision}")
+    prompt = f"""DECISION:\n
     {decision}
+    DOCUMENT TEXT:\n
+    {text}\n
     """
 
     identifier_agent = await agent.create_agent("identifier_agent")

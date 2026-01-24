@@ -229,7 +229,7 @@ def _can_access_document(user, document):
 
 def _ia_post(path, payload):
     base_url = os.environ.get("IA_API_URL", "http://host.docker.internal:8000").rstrip("/")
-    timeout = float(os.environ.get("IA_API_TIMEOUT_SEC", "60"))
+    timeout = float(os.environ.get("IA_API_TIMEOUT_SEC", "1000"))
     url = f"{base_url}/{path.lstrip('/')}"
     resp = requests.post(url, json=payload, timeout=timeout)
     resp.raise_for_status()
@@ -323,6 +323,11 @@ def document_chat_message(request, pk):
         return Response({"error": "session_id e message sao obrigatorios."}, status=400)
 
     data = _ia_post("/chat", {"session_id": session_id, "message": message})
+    raw = data.get("response")
+    if isinstance(raw, dict):
+        content = raw.get("content")
+        if content is not None:
+            return Response({"response": content})
     return Response(data)
 
 

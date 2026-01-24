@@ -5,7 +5,8 @@ from dataclasses import dataclass
 import argparse
 from dotenv import load_dotenv
 import numpy as np
-from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from scipy.sparse import csr_matrix
 
 try:
     import psycopg
@@ -44,7 +45,7 @@ class DocumentRetriever:
     def __init__(
         self,
         db_dsn: str,
-        model_name: str = "neuralmind/bert-base-portuguese-cased",
+        model_name: str = "tfidf",
         embedding_dim: int = 768,
         chunk_size: int = 512,
     ):
@@ -52,13 +53,16 @@ class DocumentRetriever:
         self.model_name = model_name
         self.embedding_dim = embedding_dim
         self.chunk_size = chunk_size
-        print(f"Loading embedding model: {model_name}")
-        self.model = SentenceTransformer(model_name)
-        test_embedding = self.model.encode("test")
-        actual_dim = len(test_embedding)
-        if actual_dim != embedding_dim:
-            print(f"Warning: Model produces {actual_dim}D embeddings, not {embedding_dim}D")
-            self.embedding_dim = actual_dim
+        print(f"Loading TF-IDF vectorizer: {model_name}")
+        # Initialize TF-IDF vectorizer with a max features limit
+        self.vectorizer = TfidfVectorizer(
+            max_features=embedding_dim,
+            lowercase=True,
+            ngram_range=(1, 2),
+            min_df=1,
+            max_df=0.95
+        )
+        self.vectorizer_fitted = False
     
     def get_connection(self):
         if psycopg is None:
@@ -145,17 +149,47 @@ class DocumentRetriever:
         
         return chunks if chunks else [text[:max_length]]
     
+    def _fit_vectorizer_on_corpus(self):
+        """Fit TF-IDF vectorizer on all documents in the database."""
+        if self.vectorizer_fitted:
+            return
+        
+        conn = self.get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT text_plain FROM dgsi_documents WHERE text_plain IS NOT NULL LIMIT 5000;")
+                docs = cur.fetchall()
+                if docs:
+                    texts = [doc[0][:self.chunk_size * 3] for doc in docs]
+                    self.vectorizer.fit(texts)
+                    print(f"Vectorizer fitted on {len(texts)} documents")
+                else:
+                    print("Warning: No documents found to fit vectorizer, fitting on empty")
+                    self.vectorizer.fit([""])
+            self.vectorizer_fitted = True
+        finally:
+            conn.close()
+    
     def generate_embedding(self, text: str, use_chunking: bool = True) -> np.ndarray:
         if not text or not text.strip():
-            return np.zeros(self.embedding_dim)
+            return np.zeros(self.embedding_dim, dtype=np.float32)
         
-        if use_chunking and len(text) > self.chunk_size * 2:
-            # For very long documents, chunk and average, with max 5 chunks
-            chunks = self._chunk_text(text, self.chunk_size)[:5]
-            embeddings = self.model.encode(chunks, convert_to_numpy=True)
-            return np.mean(embeddings, axis=0)
+        # Ensure vectorizer is fitted
+        if not self.vectorizer_fitted:
+            self._fit_vectorizer_on_corpus()
+        
+        # Transform text to sparse TF-IDF vector
+        sparse_vec = self.vectorizer.transform([text[:self.chunk_size * 3]])
+        # Convert to dense array
+        dense_vec = sparse_vec.toarray()[0].astype(np.float32)
+        
+        # Pad or truncate to embedding_dim
+        if len(dense_vec) < self.embedding_dim:
+            dense_vec = np.pad(dense_vec, (0, self.embedding_dim - len(dense_vec)), mode='constant')
         else:
-            return self.model.encode(text[:self.chunk_size * 3], convert_to_numpy=True)
+            dense_vec = dense_vec[:self.embedding_dim]
+        
+        return dense_vec
     
     def index_document(self, doc_id: int, text: str) -> bool:
         embedding = self.generate_embedding(text)
@@ -185,9 +219,9 @@ class DocumentRetriever:
                 # Delete existing chunks for this document
                 cur.execute("DELETE FROM dgsi_document_chunks WHERE doc_id = %s;", (doc_id,))
                 
-                # Insert new chunks
+                # Insert new chunks with TF-IDF embeddings
                 for i, chunk in enumerate(chunks):
-                    embedding = self.model.encode(chunk, convert_to_numpy=True)
+                    embedding = self.generate_embedding(chunk, use_chunking=False)
                     cur.execute(
                         """INSERT INTO dgsi_document_chunks 
                            (doc_id, chunk_index, chunk_text, embedding) 
@@ -418,6 +452,45 @@ class DocumentRetriever:
         finally:
             conn.close()
 
+    def clear_all_chunks(self) -> bool:
+        """Delete all chunks from the database."""
+        conn = self.get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM dgsi_document_chunks;")
+            conn.commit()
+            print("All chunks deleted successfully")
+            return True
+        except Exception as e:
+            print(f"Error deleting chunks: {e}")
+            return False
+        finally:
+            conn.close()
+
+    def clear_all_embeddings(self) -> bool:
+        """Delete all embeddings from documents table."""
+        conn = self.get_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("UPDATE dgsi_documents SET embedding = NULL;")
+            conn.commit()
+            print("All document embeddings cleared successfully")
+            return True
+        except Exception as e:
+            print(f"Error clearing embeddings: {e}")
+            return False
+        finally:
+            conn.close()
+
+    def clear_all(self) -> bool:
+        """Delete all chunks and clear all embeddings."""
+        success = True
+        success = self.clear_all_chunks() and success
+        success = self.clear_all_embeddings() and success
+        if success:
+            print("All data cleared successfully")
+        return success
+
     def retrieve_by_class(
         self,
         decision: str,
@@ -429,7 +502,9 @@ class DocumentRetriever:
         query_embedding = self.generate_embedding(query, use_chunking=False)
         conn = self.get_connection()
 
-        with open("agent/decision_ids_by_class_ALLSOURCES.json", "r", encoding="utf-8") as f:
+        # Use absolute path to JSON file
+        json_path = os.path.join(os.path.dirname(__file__), "..", "agent", "decision_ids_by_class_ALLSOURCES.json")
+        with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     
         doc_ids = []
@@ -478,7 +553,8 @@ class DocumentRetriever:
                         processo=row[5],
                         source=row[6],
                         sessao_date=row[7],
-                        similarity=similarity
+                        similarity=similarity,
+                        decision=decision
                     ))
             
             return results        
@@ -493,7 +569,7 @@ def main():
                        default=os.getenv("DGSISCRAPER_DB_DSN"),
                        help="PostgreSQL connection string")
     parser.add_argument("--action", type=str, required=True,
-                       choices=["setup", "index", "index-chunks", "search", "search-chunks", "stats"],
+                       choices=["setup", "index", "index-chunks", "search", "search-chunks", "stats", "clear", "clear-chunks", "clear-embeddings"],
                        help="Action to perform")
     parser.add_argument("--query", type=str, help="Search query (for search action)")
     parser.add_argument("--top-k", type=int, default=5, help="Number of results")
@@ -571,6 +647,21 @@ def main():
             print(f"   URL: {result.url}")
             print(f"   Chunk text: {result.chunk_text[:300]}...")
             print()
+    
+    elif args.action == "clear":
+        print("Clearing all chunks and embeddings...")
+        retriever.clear_all()
+        print("Clear complete!")
+    
+    elif args.action == "clear-chunks":
+        print("Clearing all chunks...")
+        retriever.clear_all_chunks()
+        print("Clear chunks complete!")
+    
+    elif args.action == "clear-embeddings":
+        print("Clearing all embeddings...")
+        retriever.clear_all_embeddings()
+        print("Clear embeddings complete!")
 
 
 if __name__ == "__main__":
