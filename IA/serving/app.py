@@ -4,7 +4,8 @@ from uuid import uuid4
 from pydantic import BaseModel
 
 from agent import agent
-from dgsi_scraper import knn_predict_from_file
+from knn import knn_predict_from_file
+from tfidf_svm import tfidf_svm_predict_from_file
 
 app = FastAPI()
 SESSIONS = {}
@@ -35,7 +36,7 @@ async def identify(req: IdentifyReq):
         raise HTTPException(status_code=404, detail="File not found")
     document_text = path.read_text(encoding="utf-8")
 
-    decision = knn_predict_from_file.predict_label_from_text(text=document_text)
+    decision = tfidf_svm_predict_from_file.predict_label_from_text(text=document_text)
 
     prompt = f"""Foi-lhe atribuido o seguinte documento e decisão:\n
     {document_text}\n
@@ -56,7 +57,7 @@ async def identify_text(req: IdentifyTextReq):
     print(f"identify_text received {len(text)} chars")
     print(text[:2000])
 
-    decision = knn_predict_from_file.predict_label_from_text(text=text)
+    decision = tfidf_svm_predict_from_file.predict_label_from_text(text=text)
 
     prompt = f"""Document text and decision:\n
     {text}\n
