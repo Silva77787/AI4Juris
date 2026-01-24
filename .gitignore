@@ -1,5 +1,7 @@
 *.dump
+*.sql
 dgsi_scraper/output/
+models/
 .env
 .DS_Store
 *.pyc

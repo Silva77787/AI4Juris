@@ -140,16 +140,6 @@ uv run python dgsi_scraper/decision_clean.py \
   --json-out dgsi_scraper/output/decision_classes_clean.json
 ```
 
-## Criar embeddings para documentos referentes às classes selecionadas
-
-```bash
-export DGSISCRAPER_DB_DSN="postgresql://dgsi:dgsi@localhost:5433/dgsi"
-
-uv run python -m dgsi_scraper.index_embeddings_for_ids \
-  --decision-json dgsi_scraper/decision_ids_by_class_ALLSOURCES.json \
-  --batch-size 500
-```
-
 ## NOTAS FINAIS
 
 - text_plain contém o texto integral completo  
