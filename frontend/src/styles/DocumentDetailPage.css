@@ -256,6 +256,8 @@
   padding: 14px;
   color: #dbe7ff;
   line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* STATUS PILL — reutiliza estilo da homepage */

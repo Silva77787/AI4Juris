@@ -4,7 +4,6 @@ from uuid import uuid4
 from pydantic import BaseModel
 
 from agent import agent
-from knn import knn_predict_from_file
 from tfidf_svm import tfidf_svm_predict_from_file
 
 app = FastAPI()

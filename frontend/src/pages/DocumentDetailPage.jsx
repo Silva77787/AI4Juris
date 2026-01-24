@@ -145,8 +145,31 @@ function DocumentDetailPage() {
 
   const snippets = useMemo(() => {
     const collected = [];
+    const addSnippet = (value) => {
+      if (typeof value !== "string") return;
+      const trimmed = value.trim();
+      if (!trimmed) return;
+      collected.push(trimmed);
+    };
+    const parseJustification = (value) => {
+      if (typeof value !== "string") return;
+      try {
+        const parsed = JSON.parse(value);
+        if (parsed && Array.isArray(parsed.chunks)) {
+          parsed.chunks.forEach(addSnippet);
+          return;
+        }
+        if (parsed && typeof parsed.content === "string") {
+          addSnippet(parsed.content);
+          return;
+        }
+      } catch (err) {
+        // fallback below
+      }
+      addSnippet(value);
+    };
     if (data?.justification) {
-      collected.push(data.justification);
+      parseJustification(data.justification);
     }
     const predictions = Array.isArray(data?.predictions) ? data.predictions : [];
     predictions.forEach((prediction) => {
@@ -154,7 +177,7 @@ function DocumentDetailPage() {
         ? prediction.explanations
         : [];
       explanations.forEach((ex) => {
-        if (ex.text_span) collected.push(ex.text_span);
+        if (ex.text_span) addSnippet(ex.text_span);
       });
     });
     return [...new Set(collected)].slice(0, 3);

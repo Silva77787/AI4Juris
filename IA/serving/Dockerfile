@@ -19,6 +19,8 @@ RUN uv sync --frozen
 COPY serving/ ./serving
 COPY agent/ ./agent
 COPY dgsi_scraper/ ./dgsi_scraper
+COPY tfidf_svm/ ./tfidf_svm
+COPY models/ ./models
 
 EXPOSE 8000
 

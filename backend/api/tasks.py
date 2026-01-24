@@ -1,5 +1,8 @@
+import ast
+import json
 import logging
 import os
+import re
 import time
 
 import requests
@@ -9,6 +12,41 @@ from pypdf import PdfReader
 from .models import Document, Explanation, Metric, Prediction
 
 logger = logging.getLogger(__name__)
+
+_CHUNK_TEXT_RE = re.compile(r"chunk_text='((?:\\\\.|[^'])*)'|chunk_text=\"((?:\\\\.|[^\"])*)\"")
+
+
+def _response_content(response):
+    if isinstance(response, dict):
+        content = response.get("content")
+        return content if isinstance(content, str) else ""
+    if isinstance(response, str):
+        return response
+    return ""
+
+
+def _decode_chunk_text(raw):
+    if not raw:
+        return ""
+    try:
+        return ast.literal_eval(f"'{raw}'")
+    except Exception:
+        try:
+            return bytes(raw, "utf-8").decode("unicode_escape")
+        except Exception:
+            return raw
+
+
+def _extract_chunks_from_content(content):
+    if not content:
+        return []
+    chunks = []
+    for match in _CHUNK_TEXT_RE.finditer(content):
+        raw = match.group(1) or match.group(2)
+        text = _decode_chunk_text(raw)
+        if text:
+            chunks.append(text)
+    return chunks
 
 
 def _extract_pdf_text_from_storage(document):
@@ -67,9 +105,16 @@ def process_document(self, document_id: int):
             raise RuntimeError("Failed to extract text from PDF.")
 
         decision, response_text = _call_identify_text(text)
+        content = _response_content(response_text)
+        chunks = _extract_chunks_from_content(content)
+        justification_payload = {}
+        if chunks:
+            justification_payload["chunks"] = chunks
+        if content:
+            justification_payload["content"] = content
 
         document.classification = decision or ""
-        document.justification = response_text or ""
+        document.justification = json.dumps(justification_payload) if justification_payload else ""
         document.state = "DONE"
         document.n_descriptors = 1 if decision else 0
         duration_ms = int((time.perf_counter() - started) * 1000)
