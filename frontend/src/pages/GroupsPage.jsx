@@ -153,9 +153,11 @@ function GroupsPage() {
       });
   };
 
-  const loadGroupDocuments = (groupId) => {
+  const loadGroupDocuments = (groupId, options = {}) => {
     if (!groupId) return;
-    setGroupDocsLoading(true);
+    if (!options.silent) {
+      setGroupDocsLoading(true);
+    }
     setGroupDocsError('');
 
     authFetch(`/groups/${groupId}/documents/`)
@@ -172,7 +174,9 @@ function GroupsPage() {
         setGroupDocuments([]);
       })
       .finally(() => {
-        setGroupDocsLoading(false);
+        if (!options.silent) {
+          setGroupDocsLoading(false);
+        }
       });
   };
 
@@ -234,6 +238,22 @@ function GroupsPage() {
       setGroupUploadFile(null);
     }
   }, [selectedGroupId]);
+
+  useEffect(() => {
+    if (!selectedGroupId) return;
+
+    const hasPending = groupDocuments.some((doc) => {
+      const state = (doc.state || '').toLowerCase();
+      return state === 'queued' || state === 'processing';
+    });
+    if (!hasPending) return;
+
+    const interval = setInterval(() => {
+      loadGroupDocuments(selectedGroupId, { silent: true });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [groupDocuments, selectedGroupId]);
 
 
   const groupClassificationOptions = useMemo(() => {

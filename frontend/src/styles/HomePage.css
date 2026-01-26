@@ -611,3 +611,158 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+:root[data-theme="light"] {
+  --bg: #c7d3e6;
+  --bg-2: #b7c5dc;
+  --card: #d8e2f3;
+  --muted: #5f6f8a;
+  --text: #1f2a44;
+  --accent: #2b5bd6;
+  --accent-2: #2f80ed;
+  --border: rgba(20, 32, 54, 0.12);
+  --highlight: rgba(43, 91, 214, 0.12);
+  --shadow: 0 18px 40px rgba(20, 32, 54, 0.12);
+}
+
+:root[data-theme="light"] body {
+  background: var(--bg);
+}
+
+:root[data-theme="light"] .home-page {
+  background: radial-gradient(circle at 25% 20%, rgba(43, 91, 214, 0.12), transparent 40%),
+    radial-gradient(circle at 80% 25%, rgba(79, 155, 226, 0.12), transparent 38%),
+    radial-gradient(circle at 60% 80%, rgba(43, 91, 214, 0.1), transparent 40%),
+    linear-gradient(145deg, var(--bg), var(--bg-2));
+  color: var(--text);
+}
+
+:root[data-theme="light"] .home-nav {
+  background: linear-gradient(135deg, #162a4a, #1f3a63);
+  border-bottom-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+}
+
+:root[data-theme="light"] .home-nav,
+:root[data-theme="light"] .home-nav .brand-kicker,
+:root[data-theme="light"] .home-nav .brand-title,
+:root[data-theme="light"] .home-nav .nav-title {
+  color: #e6eefc;
+}
+
+:root[data-theme="light"] .nav-btn {
+  background: rgba(255, 255, 255, 0.65);
+  color: #1f2a44;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="light"] .nav-btn:hover {
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+}
+
+:root[data-theme="light"] .nav-btn.ghost {
+  background: rgba(255, 255, 255, 0.2);
+  color: #e6eefc;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+:root[data-theme="light"] .nav-btn.ghost:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+:root[data-theme="light"] .search-field,
+:root[data-theme="light"] .pill-btn,
+:root[data-theme="light"] .filter-select {
+  background: rgba(255, 255, 255, 0.8);
+  color: #1f2a44;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="light"] .search-field input {
+  color: #1f2a44;
+}
+
+:root[data-theme="light"] .search-icon-btn {
+  background: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='11' cy='11' r='6.5' stroke='%231f2a44' stroke-width='2'/%3E%3Cpath d='M16 16L21 21' stroke='%231f2a44' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E")
+    center/contain no-repeat;
+}
+
+:root[data-theme="light"] .pill-btn:hover,
+:root[data-theme="light"] .filter-select:hover {
+  border-color: rgba(43, 91, 214, 0.35);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+:root[data-theme="light"] .doc-card,
+:root[data-theme="light"] .placeholder-card {
+  background: rgba(223, 232, 247, 0.95);
+}
+
+:root[data-theme="light"] .upload-backdrop {
+  background: rgba(31, 42, 68, 0.25);
+}
+
+:root[data-theme="light"] .upload-modal {
+  background: rgba(223, 232, 247, 0.95);
+  border-color: rgba(20, 32, 54, 0.12);
+  box-shadow: 0 18px 40px rgba(20, 32, 54, 0.18);
+}
+
+:root[data-theme="light"] .upload-dropzone {
+  border-color: rgba(43, 91, 214, 0.2);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+:root[data-theme="light"] .upload-dropzone:hover {
+  border-color: rgba(43, 91, 214, 0.4);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+:root[data-theme="light"] .upload-dropzone.is-dragging {
+  border-color: rgba(43, 91, 214, 0.6);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 0 0 1px rgba(43, 91, 214, 0.2);
+}
+
+:root[data-theme="light"] .upload-icon {
+  border-color: rgba(43, 91, 214, 0.4);
+  color: #2b5bd6;
+}
+
+:root[data-theme="light"] .upload-arrow {
+  color: #2f80ed;
+}
+
+:root[data-theme="light"] .upload-dropzone p {
+  color: #1f2a44;
+}
+
+:root[data-theme="light"] .upload-sub,
+:root[data-theme="light"] .upload-file {
+  color: #5a6c88;
+}
+
+:root[data-theme="light"] .upload-select.ghost {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(43, 91, 214, 0.3);
+  color: #1f2a44;
+}
+
+:root[data-theme="light"] .upload-select.ghost:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+:root[data-theme="light"] .brand-kicker {
+  color: #6b7c96;
+}
+
+:root[data-theme="light"] .eyebrow,
+:root[data-theme="light"] .doc-date,
+:root[data-theme="light"] .empty-body {
+  color: #5a6c88;
+}
+
+:root[data-theme="light"] .doc-file,
+:root[data-theme="light"] .placeholder-card {
+  color: #475569;
+}

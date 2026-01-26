@@ -112,3 +112,26 @@
     transform: translateY(6px);
   }
 }
+
+:root[data-theme="light"] .toast-card {
+  background: rgba(223, 232, 247, 0.95);
+  border-color: rgba(20, 32, 54, 0.12);
+  color: #1f2a44;
+  box-shadow: 0 12px 24px rgba(20, 32, 54, 0.18);
+}
+
+:root[data-theme="light"] .toast-card.success {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #166534;
+}
+
+:root[data-theme="light"] .toast-card.error {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #b91c1c;
+}
+
+:root[data-theme="light"] .toast-close:hover {
+  background: rgba(15, 23, 42, 0.08);
+}

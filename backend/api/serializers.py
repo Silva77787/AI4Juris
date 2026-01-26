@@ -34,6 +34,8 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
             "storage_path",
             "state",
             "text",
+            "classification",
+            "justification",
             "page_count",
             "duration_ms",
             "n_descriptors",

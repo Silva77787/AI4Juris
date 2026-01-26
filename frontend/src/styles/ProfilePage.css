@@ -223,6 +223,53 @@
   stroke-width: 3;
 }
 
+:root[data-theme="light"] .stat-card,
+:root[data-theme="light"] .profile-card {
+  background: rgba(223, 232, 247, 0.95);
+  border-color: rgba(20, 32, 54, 0.12);
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme="light"] .stat-value {
+  color: #1f2a44;
+}
+
+:root[data-theme="light"] .modal-backdrop {
+  background: rgba(28, 39, 63, 0.25);
+}
+
+:root[data-theme="light"] .modal-card {
+  background: rgba(223, 232, 247, 0.98);
+  border-color: rgba(20, 32, 54, 0.12);
+}
+
+:root[data-theme="light"] .modal-close {
+  background: rgba(255, 255, 255, 0.7);
+  color: #1f2a44;
+}
+
+:root[data-theme="light"] .modal-close:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+:root[data-theme="light"] .modal-form input {
+  background: rgba(255, 255, 255, 0.85);
+  color: #1f2a44;
+}
+
+:root[data-theme="light"] .modal-form input:-webkit-autofill,
+:root[data-theme="light"] .modal-form input:-webkit-autofill:hover,
+:root[data-theme="light"] .modal-form input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #1f2a44;
+  box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.95) inset;
+}
+
+:root[data-theme="light"] .chip-btn {
+  background: rgba(255, 255, 255, 0.8);
+  color: #1f2a44;
+  border-color: rgba(20, 32, 54, 0.12);
+}
+
 .chart-axis {
   display: grid;
   grid-template-columns: repeat(11, 1fr);

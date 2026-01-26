@@ -1,8 +1,23 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/HomePage.css';
 
 function TopBar({ title }) {
   const navigate = useNavigate();
+  const [theme, setTheme] = useState(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) return storedTheme;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const handleThemeToggle = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
@@ -23,6 +38,9 @@ function TopBar({ title }) {
       {title ? <div className="nav-title">{title}</div> : <div className="nav-spacer" />}
 
       <nav className="nav-actions">
+        <button className="nav-btn ghost" onClick={handleThemeToggle}>
+          {theme === 'light' ? 'Modo escuro' : 'Modo claro'}
+        </button>
         <Link className="nav-btn ghost" to="/groups">
           Chat de Grupos
         </Link>
